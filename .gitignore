@@ -1,0 +1,13 @@
+# Thư viện & bản build
+node_modules/
+dist/
+
+# Tài liệu cá nhân / ảnh tham khảo (không đưa lên repo)
+img/
+bima.framer.media_.png
+
+# Hệ điều hành / editor
+.DS_Store
+Thumbs.db
+.vscode/
+*.log

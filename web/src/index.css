@@ -1,0 +1,244 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --color-night: #000319;
+  --color-night-card: #0b0d26;
+  --color-lilac: #b9b0ff;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+html {
+  scroll-behavior: smooth;
+}
+
+:root {
+  --surface: #ffffff;
+}
+
+body {
+  @apply bg-slate-100 text-slate-800 antialiased;
+}
+
+@utility card {
+  @apply rounded-2xl p-5 shadow-sm ring-1 ring-slate-200;
+  background-color: var(--surface);
+}
+
+@utility btn {
+  @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50;
+}
+@utility btn-primary {
+  @apply btn bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-500;
+}
+@utility btn-secondary {
+  @apply btn bg-slate-100 text-slate-700 hover:bg-slate-200;
+}
+@utility btn-danger {
+  @apply btn bg-red-600 text-white hover:bg-red-700 dark:hover:bg-red-500;
+}
+
+@utility input {
+  @apply w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100;
+  background-color: var(--surface);
+}
+@utility label {
+  @apply mb-1 block text-sm font-medium text-slate-600;
+}
+
+@keyframes alarm-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
+  50% { box-shadow: 0 0 0 16px rgba(220, 38, 38, 0); }
+}
+.alarm-pulse {
+  animation: alarm-pulse 1.2s infinite;
+}
+
+
+/* ================= Giao diện tối của app (class .dark trên <html>, do Layout bật/tắt) =================
+   Đổi lại biến màu của Tailwind thay vì thêm dark: vào từng trang. */
+.dark {
+  color-scheme: dark;
+  --surface: #10142f;
+  --color-slate-50: #151a3a;
+  --color-slate-100: #1a1f44;
+  --color-slate-200: #262c58;
+  --color-slate-300: #363d6e;
+  --color-slate-400: #7a82ad;
+  --color-slate-500: #959cc2;
+  --color-slate-600: #b3b9da;
+  --color-slate-700: #cdd2ec;
+  --color-slate-800: #e2e5f6;
+  --color-slate-900: #f3f4fc;
+  --color-blue-50: color-mix(in oklab, var(--color-blue-500) 14%, transparent);
+  --color-blue-100: color-mix(in oklab, var(--color-blue-500) 24%, transparent);
+  --color-sky-50: color-mix(in oklab, var(--color-sky-500) 14%, transparent);
+  --color-sky-100: color-mix(in oklab, var(--color-sky-500) 24%, transparent);
+  --color-indigo-50: color-mix(in oklab, var(--color-indigo-500) 14%, transparent);
+  --color-indigo-100: color-mix(in oklab, var(--color-indigo-500) 24%, transparent);
+  --color-violet-50: color-mix(in oklab, var(--color-violet-500) 14%, transparent);
+  --color-violet-100: color-mix(in oklab, var(--color-violet-500) 24%, transparent);
+  --color-emerald-50: color-mix(in oklab, var(--color-emerald-500) 14%, transparent);
+  --color-emerald-100: color-mix(in oklab, var(--color-emerald-500) 24%, transparent);
+  --color-green-50: color-mix(in oklab, var(--color-green-500) 14%, transparent);
+  --color-green-100: color-mix(in oklab, var(--color-green-500) 24%, transparent);
+  --color-amber-50: color-mix(in oklab, var(--color-amber-500) 14%, transparent);
+  --color-amber-100: color-mix(in oklab, var(--color-amber-500) 24%, transparent);
+  --color-orange-50: color-mix(in oklab, var(--color-orange-500) 14%, transparent);
+  --color-orange-100: color-mix(in oklab, var(--color-orange-500) 24%, transparent);
+  --color-red-50: color-mix(in oklab, var(--color-red-500) 14%, transparent);
+  --color-red-100: color-mix(in oklab, var(--color-red-500) 24%, transparent);
+  --color-rose-50: color-mix(in oklab, var(--color-rose-500) 14%, transparent);
+  --color-rose-100: color-mix(in oklab, var(--color-rose-500) 24%, transparent);
+}
+.dark body {
+  background-color: #080b1f;
+}
+.dark .bg-white {
+  background-color: var(--surface);
+}
+.dark .bg-white\/90 {
+  background-color: rgb(16 20 47 / 0.9);
+}
+/* chữ màu đậm -> sáng hơn cho dễ đọc trên nền tối */
+.dark .text-blue-600, .dark .text-blue-700, .dark .text-blue-800 { color: var(--color-blue-300); }
+.dark .text-sky-600, .dark .text-sky-700, .dark .text-sky-800 { color: var(--color-sky-300); }
+.dark .text-indigo-600, .dark .text-indigo-700, .dark .text-indigo-800 { color: var(--color-indigo-300); }
+.dark .text-violet-600, .dark .text-violet-700, .dark .text-violet-800 { color: var(--color-violet-300); }
+.dark .text-emerald-600, .dark .text-emerald-700, .dark .text-emerald-800 { color: var(--color-emerald-300); }
+.dark .text-green-600, .dark .text-green-700, .dark .text-green-800 { color: var(--color-green-300); }
+.dark .text-amber-600, .dark .text-amber-700, .dark .text-amber-800 { color: var(--color-amber-300); }
+.dark .text-orange-600, .dark .text-orange-700, .dark .text-orange-800 { color: var(--color-orange-300); }
+.dark .text-red-600, .dark .text-red-700, .dark .text-red-800 { color: var(--color-red-300); }
+.dark .text-rose-600, .dark .text-rose-700, .dark .text-rose-800 { color: var(--color-rose-300); }
+/* biểu đồ Recharts */
+.dark .recharts-cartesian-grid line {
+  stroke: #262c58;
+}
+.dark .recharts-cartesian-axis-tick-value {
+  fill: #959cc2;
+}
+.dark .recharts-default-tooltip {
+  background-color: #151a3a !important;
+  border-color: #262c58 !important;
+}
+.dark .recharts-tooltip-label {
+  color: #e2e5f6;
+}
+.dark .recharts-tooltip-cursor {
+  fill: rgb(255 255 255 / 0.05);
+}
+
+/* ================= Landing & đăng nhập (phong cách tối) ================= */
+
+/* Chữ gradient trắng -> tím nhạt */
+@utility text-grad {
+  background-image: linear-gradient(90deg, #ffffff 0%, #ffffff 35%, #b9b0ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* Chữ nhấn tím -> cam */
+@utility text-grad-warm {
+  background-image: linear-gradient(90deg, #a99cff 0%, #c9a4f0 45%, #ffc47e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Nhãn [ GIẢI PHÁP ] */
+@utility eyebrow {
+  @apply font-display text-xs font-medium tracking-[0.12em] text-slate-400 uppercase;
+}
+
+/* Thẻ tối viền mờ */
+@utility glass-card {
+  @apply rounded-3xl border border-white/10 bg-gradient-to-b from-[#12142f] to-[#0a0c22];
+}
+
+/* Chữ hiện dần + bỏ nhoè khi tải trang */
+@keyframes blur-in {
+  from { opacity: 0; filter: blur(6px); transform: translate3d(0, 14px, 0); }
+  to { opacity: 1; filter: blur(0); transform: none; }
+}
+.blur-in {
+  opacity: 0;
+  animation: blur-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Hiện khi cuộn tới */
+.reveal {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+.spin-slow {
+  animation: spin-slow 40s linear infinite;
+  will-change: transform;
+}
+.spin-rev {
+  animation: spin-slow 40s linear infinite reverse;
+  will-change: transform;
+}
+
+@keyframes float-y {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -12px, 0); }
+}
+.float-y {
+  animation: float-y 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* tia sáng tĩnh (không animate để đỡ tốn tài nguyên) */
+.beam {
+  opacity: 0.7;
+}
+
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+.marquee {
+  animation: marquee 30s linear infinite;
+}
+
+@keyframes drift {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(18px); }
+}
+.drift {
+  animation: drift 7s ease-in-out infinite;
+}
+
+@keyframes glow-border {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+.glow-border {
+  animation: glow-border 3s ease-in-out infinite;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+.shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shake { animation: none; }
+  .reveal, .blur-in { opacity: 1; filter: none; transform: none; transition: none; animation: none; }
+  .spin-slow, .spin-rev, .float-y, .marquee, .drift, .glow-border, .alarm-pulse { animation: none; }
+}

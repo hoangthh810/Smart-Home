@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { homePathOf, useCurrentUser } from './store/auth'
+import { homePathOf, useAuth, useCurrentUser } from './store/auth'
 import Layout from './components/Layout'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
@@ -15,7 +15,16 @@ import AdminAlerts from './pages/admin/AdminAlerts'
 import EvnPricing from './pages/admin/EvnPricing'
 
 function RequireRole({ role, children }) {
+  const ready = useAuth((s) => s.ready)
   const user = useCurrentUser()
+  // Đang chờ Firebase cho biết đã đăng nhập chưa
+  if (!ready) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <span className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
+      </div>
+    )
+  }
   if (!user || user.status === 'locked') return <Navigate to="/dang-nhap" replace />
   if (user.role !== role) return <Navigate to={homePathOf(user)} replace />
   return children

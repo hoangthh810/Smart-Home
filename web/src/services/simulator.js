@@ -14,6 +14,7 @@ export function createSimulator({ getSettings, emit }) {
   const now = Date.now()
   const rooms = {
     living: {
+      nodeId: 1, // ID cài bằng nút trên node, hiện trên LCD
       mode: 'auto',
       devices: { light: false, fan: false },
       sensors: { temperature: 29.5, humidity: 68, lux: 250, presence: false, power: 0 },
@@ -21,6 +22,7 @@ export function createSimulator({ getSettings, emit }) {
       presenceOverride: null,
     },
     kitchen: {
+      nodeId: 2,
       mode: 'auto',
       devices: { light: false, fan: false, buzzer: false },
       sensors: { temperature: 31, humidity: 72, gas: 120, presence: false, power: 0 },
@@ -41,7 +43,7 @@ export function createSimulator({ getSettings, emit }) {
 
   const publishState = (roomId) => {
     const r = rooms[roomId]
-    emit(roomId, 'state', { mode: r.mode, devices: { ...r.devices }, alarm: !!r.alarm })
+    emit(roomId, 'state', { nodeId: r.nodeId, mode: r.mode, devices: { ...r.devices }, alarm: !!r.alarm })
   }
 
   function tick() {
@@ -124,6 +126,8 @@ export function createSimulator({ getSettings, emit }) {
       r.gasLeak = !!payload.value
     } else if (payload.simulate === 'presence') {
       r.presenceOverride = payload.value
+    } else if (payload.simulate === 'nodeId') {
+      r.nodeId = payload.value
     }
     publishState(roomId)
   }
@@ -133,7 +137,11 @@ export function createSimulator({ getSettings, emit }) {
 
   return {
     handleCommand,
-    getSimState: (roomId) => ({ gasLeak: !!rooms[roomId]?.gasLeak, presenceOverride: rooms[roomId]?.presenceOverride ?? null }),
+    getSimState: (roomId) => ({
+      gasLeak: !!rooms[roomId]?.gasLeak,
+      presenceOverride: rooms[roomId]?.presenceOverride ?? null,
+      nodeId: rooms[roomId]?.nodeId ?? 1,
+    }),
     stop: () => clearInterval(timer),
   }
 }

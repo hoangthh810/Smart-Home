@@ -2,11 +2,11 @@ import { Link } from 'react-router-dom'
 import { AlertTriangle, ArrowRight, ChefHat, Droplets, Flame, Gauge, Receipt, Sofa, Sun, Thermometer, UserCheck, UserX, Zap } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useCurrentHome, useCurrentUser } from '../../store/auth'
-import { useDb } from '../../store/db'
+import { useDb, useHomeSettings } from '../../store/db'
 import { useLive } from '../../store/live'
 import { useEnergy } from '../../hooks/useEnergy'
 import { ROOMS } from '../../data/constants'
-import { Badge, PageHeader, StatCard } from '../../components/ui'
+import { Badge, NodeBadge, PageHeader, StatCard } from '../../components/ui'
 import { DeviceList, ModeSwitch } from '../../components/RoomWidgets'
 import { fmtEnergy, fmtNumber, fmtVnd } from '../../utils/format'
 
@@ -76,7 +76,7 @@ export default function Dashboard() {
 function RoomCard({ roomId, icon: Icon }) {
   const room = useLive((s) => s.rooms[roomId])
   const homeId = useCurrentHome().id
-  const settings = useDb((s) => s.settings[homeId])
+  const settings = useHomeSettings(homeId)
   const s = room.sensors
 
   const metrics = [
@@ -96,11 +96,14 @@ function RoomCard({ roomId, icon: Icon }) {
         </div>
         <div className="flex-1">
           <h2 className="font-semibold">{ROOMS[roomId].name}</h2>
-          {s.presence ? (
-            <Badge tone="green"><UserCheck size={12} /> Có người</Badge>
-          ) : (
-            <Badge tone="slate"><UserX size={12} /> Không có người</Badge>
-          )}
+          <div className="mt-0.5 flex flex-wrap gap-1.5">
+            {s.presence ? (
+              <Badge tone="green"><UserCheck size={12} /> Có người</Badge>
+            ) : (
+              <Badge tone="slate"><UserX size={12} /> Không có người</Badge>
+            )}
+            <NodeBadge id={room.nodeId} />
+          </div>
         </div>
         <ModeSwitch roomId={roomId} compact />
       </div>

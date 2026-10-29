@@ -1,17 +1,10 @@
 import { useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { Activity, ArrowLeft, ArrowRight, BellRing, Eye, EyeOff, Lock, Power, User } from 'lucide-react'
+import { Link, Navigate } from 'react-router-dom'
+import { Activity, ArrowLeft, ArrowRight, BellRing, Eye, EyeOff, Lock, Mail, Power } from 'lucide-react'
 import { homePathOf, useAuth, useCurrentUser } from '../store/auth'
-import { useDb } from '../store/db'
 import BrandMark from '../components/landing/BrandMark'
 import HeroEmblem from '../components/landing/HeroEmblem'
 import { BlurWords } from '../components/landing/effects'
-
-const DEMO_ACCOUNTS = [
-  { username: 'hoang', password: '123456', label: 'Chủ nhà' },
-  { username: 'lan', password: '123456', label: 'Thành viên' },
-  { username: 'admin', password: 'admin123', label: 'Quản trị' },
-]
 
 const FEATURES = [
   { icon: Activity, title: 'Giám sát thời gian thực', desc: 'Nhiệt độ, độ ẩm, ánh sáng, khí gas cập nhật mỗi 2 giây', cls: 'text-violet-300' },
@@ -35,9 +28,7 @@ function DarkInput({ icon: Icon, right, ...props }) {
 export default function Login() {
   const login = useAuth((s) => s.login)
   const user = useCurrentUser()
-  const users = useDb((s) => s.users)
-  const navigate = useNavigate()
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
   const [error, setError] = useState('')
@@ -46,20 +37,16 @@ export default function Login() {
 
   if (user) return <Navigate to={homePathOf(user)} replace />
 
-  const submit = (e) => {
+  // Đăng nhập thành công: hồ sơ tải xong thì <Navigate> ở trên tự chuyển trang
+  const submit = async (e) => {
     e.preventDefault()
     setLoading(true)
-    // độ trễ nhỏ để giống gọi API thật
-    setTimeout(() => {
-      const err = login(username, password)
+    const err = await login(email, password)
+    if (err) {
       setLoading(false)
-      if (err) {
-        setError(err)
-        setShakeKey((k) => k + 1)
-        return
-      }
-      navigate(homePathOf(users.find((x) => x.username === username.trim())))
-    }, 500)
+      setError(err)
+      setShakeKey((k) => k + 1)
+    }
   }
 
   return (
@@ -124,17 +111,18 @@ export default function Login() {
 
               <form onSubmit={submit} className="mt-7 space-y-4">
                 <div>
-                  <label htmlFor="username" className="mb-1.5 block text-sm text-slate-300">Tên đăng nhập</label>
+                  <label htmlFor="email" className="mb-1.5 block text-sm text-slate-300">Email</label>
                   <DarkInput
-                    id="username"
-                    icon={User}
-                    placeholder="vd: hoang"
-                    value={username}
+                    id="email"
+                    type="email"
+                    icon={Mail}
+                    placeholder="vd: ten@gmail.com"
+                    value={email}
                     onChange={(e) => {
-                      setUsername(e.target.value)
+                      setEmail(e.target.value)
                       setError('')
                     }}
-                    autoComplete="username"
+                    autoComplete="email"
                     autoFocus
                     required
                   />
@@ -182,28 +170,9 @@ export default function Login() {
                 </button>
               </form>
 
-              <div className="mt-8 border-t border-white/10 pt-6">
-                <p className="text-xs text-slate-500">Tài khoản demo – bấm để điền nhanh</p>
-                <div className="mt-3 grid grid-cols-3 gap-2">
-                  {DEMO_ACCOUNTS.map((a) => (
-                    <button
-                      key={a.username}
-                      type="button"
-                      onClick={() => {
-                        setUsername(a.username)
-                        setPassword(a.password)
-                        setError('')
-                      }}
-                      className={`cursor-pointer rounded-xl border px-2 py-2.5 text-center transition ${
-                        username === a.username ? 'border-violet-400/60 bg-violet-500/10' : 'border-white/10 hover:bg-white/5'
-                      }`}
-                    >
-                      <span className="block text-xs font-medium text-slate-200">{a.label}</span>
-                      <span className="block font-mono text-[11px] text-slate-500">{a.username}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <p className="mt-8 border-t border-white/10 pt-6 text-xs text-slate-500">
+                Chưa có tài khoản? Liên hệ quản trị viên để được cấp. Thông tin đăng nhập sẽ được gửi qua email.
+              </p>
             </div>
           </div>
         </div>

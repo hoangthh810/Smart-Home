@@ -35,6 +35,7 @@ export default function Layout({ role }) {
   const [open, setOpen] = useState(false)
   const user = useCurrentUser()
   const home = useCurrentHome()
+  const homesLoaded = useAuth((s) => s.homesLoaded)
   const logout = useAuth((s) => s.logout)
   const navigate = useNavigate()
   const unackCount = useDb((s) => s.alerts.filter((a) => !a.acknowledgedAt).length)
@@ -49,8 +50,8 @@ export default function Layout({ role }) {
   }, [theme])
 
   const nav = role === 'admin' ? ADMIN_NAV : USER_NAV
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await logout()
     navigate('/dang-nhap')
   }
 
@@ -91,7 +92,7 @@ export default function Layout({ role }) {
       <div className="border-t border-slate-100 p-3">
         <div className="mb-2 px-3">
           <p className="truncate text-sm font-medium text-slate-800">{user?.fullName}</p>
-          <p className="truncate text-xs text-slate-500">@{user?.username}</p>
+          <p className="truncate text-xs text-slate-500">{user?.email}</p>
         </div>
         <button onClick={handleLogout} className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600">
           <LogOut size={18} /> Đăng xuất
@@ -135,7 +136,7 @@ export default function Layout({ role }) {
         {role === 'user' && <GasBanner />}
 
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 lg:px-8">
-          <Outlet />
+          {role === 'user' && !home ? <NoHome loaded={homesLoaded} /> : <Outlet />}
         </main>
       </div>
 
@@ -180,6 +181,23 @@ function GasBanner() {
     <div className="flex items-center gap-2 bg-red-600 px-4 py-2 text-sm font-medium text-white lg:px-8">
       <AlertTriangle size={18} className="shrink-0" />
       Phòng bếp đang rò rỉ khí gas ({gas} ppm). Còi báo đang kêu – không bật/tắt thiết bị điện!
+    </div>
+  )
+}
+
+// Trang của user cần dữ liệu nhà: đang tải thì chờ, không có nhà thì báo
+function NoHome({ loaded }) {
+  if (!loaded) {
+    return (
+      <div className="flex justify-center py-24">
+        <span className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
+      </div>
+    )
+  }
+  return (
+    <div className="card mx-auto mt-10 max-w-md text-center">
+      <h2 className="font-semibold">Tài khoản chưa được gắn với nhà nào</h2>
+      <p className="mt-2 text-sm text-slate-500">Nhà của bạn có thể đã bị xoá. Vui lòng liên hệ quản trị viên.</p>
     </div>
   )
 }

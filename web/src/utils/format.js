@@ -10,6 +10,9 @@ export const fmtDateTime = (iso) =>
     ? new Date(iso).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })
     : '--'
 
+// ID node ESP32 (cài bằng nút trên node) – hiển thị 2 chữ số giống LCD: #01
+export const fmtNodeId = (id) => (id == null ? '--' : `#${String(id).padStart(2, '0')}`)
+
 export const fmtDate = (iso) => (iso ? new Date(iso).toLocaleDateString('vi-VN') : '--')
 
 export function fmtEnergy(wh) {

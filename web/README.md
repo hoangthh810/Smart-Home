@@ -10,17 +10,13 @@ npm run dev        # http://localhost:5173 (máy khác trong LAN: http://<ip-má
 npm run build      # build ra thư mục dist/
 ```
 
-Tài khoản demo:
+Cấu hình: sao chép `.env.example` thành `.env.local` rồi điền thông số Firebase + EmailJS. Luật bảo mật Firestore ở `../firebase/firestore.rules`.
 
-| Vai trò | Tên đăng nhập | Mật khẩu |
-|---|---|---|
-| Chủ nhà (user) | `hoang` | `123456` |
-| Thành viên cùng nhà | `lan` | `123456` |
-| Quản trị viên | `admin` | `admin123` |
+Đăng nhập bằng email (Firebase Auth). Admin gốc tạo tay trong Firebase Console (UID ghi vào `VITE_BOOTSTRAP_ADMIN_UID`); tài khoản người dùng do admin cấp ở trang **Nhà & tài khoản** (gửi email đăng nhập + mật khẩu qua EmailJS).
 
-Dữ liệu lưu trong `localStorage` của trình duyệt. Muốn reset dữ liệu mẫu: xoá key `smarthome-db` trong DevTools → Application → Local Storage.
+Nhà và tài khoản lưu trên Firestore. Cài đặt, cảnh báo, nhật ký vẫn lưu `localStorage` (key `smarthome-db`) – sẽ chuyển dần lên Firebase.
 
-Mẹo demo: mở 1 tab đăng nhập `hoang`, 1 tab đăng nhập `admin` (mỗi tab giữ phiên riêng). Vào Phòng bếp → bật "Giả lập rò rỉ khí gas" → tab admin thấy cảnh báo và bấm "Nhắc nhở" → tab user hiện lại popup.
+Mẹo demo: mở 1 tab đăng nhập tài khoản user, 1 tab đăng nhập admin (mỗi tab giữ phiên riêng). Vào Phòng bếp → bật "Giả lập rò rỉ khí gas" → tab admin thấy cảnh báo và bấm "Nhắc nhở" → tab user hiện lại popup.
 
 ## Cấu trúc
 
@@ -44,7 +40,7 @@ src/
 | Topic | Hướng | Payload |
 |---|---|---|
 | `smarthome/{homeId}/{room}/sensors` | ESP32 → Web | `{temperature, humidity, lux \| gas, presence, power}` |
-| `smarthome/{homeId}/{room}/state` | ESP32 → Web | `{mode, devices: {light, fan, buzzer}, alarm}` |
+| `smarthome/{homeId}/{room}/state` | ESP32 → Web | `{nodeId, mode, devices: {light, fan, buzzer}, alarm}` |
 | `smarthome/{homeId}/{room}/cmd` | Web → Pi/ESP32 | `{mode: "auto" \| "manual"}` hoặc `{device, value}` |
 | `smarthome/{homeId}/{room}/event` | Pi → Web | `{actor, action}` |
 | `smarthome/{homeId}/{room}/alert` | Pi → Web | `{event: "start" \| "end", type: "gas", ...}` |
@@ -54,6 +50,7 @@ src/
 ## Quy tắc tự động
 
 - **Tự động**: PIR phát hiện có người → bật đèn + quạt; không có người sau X phút (cài trong "Cài đặt nhà") → tắt.
-- **Thủ công**: người dùng bật/tắt đèn, quạt bằng nút trên web.
+- **Thủ công**: người dùng bật/tắt đèn, quạt bằng nút trên web (không có nút bấm vật lý điều khiển thiết bị).
+- **Nút nhấn trên node** (SET = D32, OK = D33): chỉ để cài ID node (1–99, lưu flash). ID hiện trên LCD và gửi lên web trong `state.nodeId`.
 - **Khí gas vượt ngưỡng**: còi kêu, gửi email, hiện cảnh báo trên web; đèn và quạt giữ nguyên, tạm khoá điều khiển (tránh phát tia lửa điện).
 - Ngưỡng nhiệt độ, độ ẩm, ánh sáng chỉ để hiển thị, không ảnh hưởng chế độ Tự động.

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Mail, Plus, Save, X } from 'lucide-react'
-import { useCurrentHome } from '../../store/auth'
-import { useDb } from '../../store/db'
+import { useAuth, useCurrentHome } from '../../store/auth'
+import { useDb, useHomeSettings } from '../../store/db'
 import { useLive } from '../../store/live'
 import { Field, PageHeader } from '../../components/ui'
 
@@ -9,13 +9,16 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export default function HomeSettings() {
   const home = useCurrentHome()
-  const settings = useDb((s) => s.settings[home.id])
+  const settings = useHomeSettings(home.id)
   const updateSettings = useDb((s) => s.updateSettings)
-  const allUsers = useDb((s) => s.users)
-  const members = allUsers.filter((u) => u.homeId === home.id)
+  const members = useAuth((s) => s.users)
   const pushToast = useLive((s) => s.pushToast)
 
-  const [form, setForm] = useState(() => ({ ...settings }))
+  // Chưa cài email nhận cảnh báo thì gợi ý sẵn email của các thành viên
+  const [form, setForm] = useState(() => ({
+    ...settings,
+    alertEmails: settings.alertEmails.length ? settings.alertEmails : members.map((m) => m.email),
+  }))
   const [newEmail, setNewEmail] = useState('')
   const [errors, setErrors] = useState({})
 
@@ -147,7 +150,7 @@ export default function HomeSettings() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{m.fullName}</p>
-                  <p className="truncate text-xs text-slate-500">@{m.username} · {m.email}</p>
+                  <p className="truncate text-xs text-slate-500">{m.email}</p>
                 </div>
               </li>
             ))}

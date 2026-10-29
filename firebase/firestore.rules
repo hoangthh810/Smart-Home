@@ -1,0 +1,47 @@
+rules_version = '2';
+
+// Luật bảo mật Firestore – dán vào Firebase Console → Firestore Database → Rules → Publish
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function myProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function hasProfile() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    // Admin gốc (UID trong VITE_BOOTSTRAP_ADMIN_UID) luôn có quyền admin, kể cả trước khi có hồ sơ
+    function isRootAdmin() {
+      return signedIn() && request.auth.uid == 'a2feVJN2jSZxOr0MAKu8h9M75cl2';
+    }
+    function isActive() {
+      return signedIn() && hasProfile() && myProfile().status == 'active';
+    }
+    function isAdmin() {
+      return isRootAdmin() || (isActive() && myProfile().role == 'admin');
+    }
+
+    // Hồ sơ tài khoản
+    match /users/{uid} {
+      // Xem: admin xem tất cả; mỗi người xem hồ sơ của mình; thành viên xem nhau trong cùng nhà
+      allow read: if isAdmin()
+        || (signedIn() && request.auth.uid == uid)
+        || (isActive() && myProfile().homeId != null && resource.data.homeId == myProfile().homeId);
+      // Chỉ admin cấp / xoá tài khoản
+      allow create, delete: if isAdmin();
+      // Admin sửa mọi thứ; người dùng chỉ được tự đổi họ tên
+      allow update: if isAdmin()
+        || (isActive() && request.auth.uid == uid
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fullName']));
+    }
+
+    // Nhà
+    match /homes/{homeId} {
+      allow read: if isAdmin() || (isActive() && myProfile().homeId == homeId);
+      allow write: if isAdmin();
+    }
+  }
+}

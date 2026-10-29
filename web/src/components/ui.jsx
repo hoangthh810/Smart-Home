@@ -1,5 +1,6 @@
-import { X } from 'lucide-react'
+import { Cpu, X } from 'lucide-react'
 import { useEffect } from 'react'
+import { fmtNodeId } from '../utils/format'
 
 export function PageHeader({ title, subtitle, actions }) {
   return (
@@ -43,6 +44,17 @@ export function Badge({ tone = 'slate', children }) {
   return (
     <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${TONES[tone]}`}>
       {children}
+    </span>
+  )
+}
+
+// ID node ESP32 của phòng (trùng với số hiện trên LCD của node)
+export function NodeBadge({ id }) {
+  return (
+    <span title="ID node ESP32 – cài bằng nút SET/OK trên node, hiện trên LCD">
+      <Badge tone={id == null ? 'slate' : 'violet'}>
+        <Cpu size={12} /> Node {fmtNodeId(id)}
+      </Badge>
     </span>
   )
 }

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { BellRing, Search } from 'lucide-react'
-import { useCurrentUser } from '../../store/auth'
+import { useAuth, useCurrentUser } from '../../store/auth'
 import { useDb } from '../../store/db'
 import { useLive } from '../../store/live'
 import { ROOMS } from '../../data/constants'
@@ -30,7 +30,7 @@ export function RemindButton({ alert, small }) {
 
 export default function AdminAlerts() {
   const alerts = useDb((s) => s.alerts)
-  const homes = useDb((s) => s.homes)
+  const homes = useAuth((s) => s.homes)
   const [filter, setFilter] = useState('unack')
   const [q, setQ] = useState('')
 

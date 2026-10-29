@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, BellRing, Home, UserPlus, Users } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useDb } from '../../store/db'
+import { useAuth } from '../../store/auth'
 import { EmptyState, PageHeader, StatCard } from '../../components/ui'
 import { RemindButton } from './AdminAlerts'
 import { fmtDate, timeAgo } from '../../utils/format'
@@ -21,8 +22,8 @@ function lastMonths(n) {
 }
 
 export default function AdminDashboard() {
-  const homes = useDb((s) => s.homes)
-  const users = useDb((s) => s.users)
+  const homes = useAuth((s) => s.homes)
+  const users = useAuth((s) => s.users)
   const alerts = useDb((s) => s.alerts)
 
   const stats = useMemo(() => {
@@ -121,7 +122,7 @@ export default function AdminDashboard() {
               <li key={u.id} className="flex items-center gap-3 py-3">
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{u.fullName}</p>
-                  <p className="truncate text-xs text-slate-500">@{u.username} · {homeName(u.homeId)}</p>
+                  <p className="truncate text-xs text-slate-500">{u.email} · {homeName(u.homeId)}</p>
                 </div>
                 <span className="text-xs text-slate-400">{fmtDate(u.createdAt)}</span>
               </li>

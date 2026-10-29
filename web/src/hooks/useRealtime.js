@@ -2,7 +2,7 @@
 import { useEffect } from 'react'
 import { connect, disconnect } from '../services/realtime'
 import { useLive } from '../store/live'
-import { useDb } from '../store/db'
+import { settingsOf, useDb } from '../store/db'
 import { ROOMS } from '../data/constants'
 
 export function useRealtime(homeId) {
@@ -11,7 +11,7 @@ export function useRealtime(homeId) {
     const live = useLive.getState()
 
     connect(homeId, {
-      getSettings: () => useDb.getState().settings[homeId],
+      getSettings: () => settingsOf(useDb.getState(), homeId),
       onMessage: ({ room, kind, payload }) => {
         const db = useDb.getState()
         if (kind === 'sensors') live.onSensors(room, payload)
@@ -35,7 +35,7 @@ function handleAlert(homeId, room, payload) {
   const open = db.alerts.find((a) => a.homeId === homeId && a.room === room && !a.resolvedAt)
 
   if (payload.event === 'start' && !open) {
-    const emails = db.settings[homeId]?.alertEmails ?? []
+    const emails = settingsOf(db, homeId).alertEmails
     db.addAlert({ homeId, room, type: payload.type, peakValue: payload.value, threshold: payload.threshold, emailsSentTo: emails })
     db.addLog({ homeId, room, actor: 'Hệ thống', action: `Phát hiện khí gas ${payload.value} ppm – bật còi báo` })
     useLive.getState().pushToast(

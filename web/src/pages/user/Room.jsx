@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import { Bot, Droplets, FlaskConical, Flame, Gauge, Sun, Thermometer, UserCheck, UserX } from 'lucide-react'
 import { useCurrentHome } from '../../store/auth'
-import { useDb } from '../../store/db'
+import { useHomeSettings } from '../../store/db'
 import { useLive } from '../../store/live'
 import { getSimState, sendCommand } from '../../services/realtime'
 import { ROOMS } from '../../data/constants'
-import { PageHeader, StatCard, Toggle } from '../../components/ui'
+import { NodeBadge, PageHeader, StatCard, Toggle } from '../../components/ui'
 import { DeviceList, ModeSwitch } from '../../components/RoomWidgets'
 import SensorChart from '../../components/SensorChart'
 import { fmtDateTime, fmtNumber } from '../../utils/format'
@@ -14,7 +14,7 @@ import { fmtDateTime, fmtNumber } from '../../utils/format'
 export default function Room() {
   const { roomId } = useParams()
   const home = useCurrentHome()
-  const settings = useDb((s) => s.settings[home.id])
+  const settings = useHomeSettings(home.id)
   const room = useLive((s) => s.rooms[roomId])
   const history = useLive((s) => s.history[roomId])
 
@@ -26,7 +26,12 @@ export default function Room() {
     <>
       <PageHeader
         title={ROOMS[roomId].name}
-        subtitle={`Cập nhật lúc ${room.updatedAt ? fmtDateTime(room.updatedAt) : '--'}`}
+        subtitle={
+          <span className="flex flex-wrap items-center gap-2">
+            <NodeBadge id={room.nodeId} />
+            Cập nhật lúc {room.updatedAt ? fmtDateTime(room.updatedAt) : '--'}
+          </span>
+        }
         actions={<ModeSwitch roomId={roomId} />}
       />
 
@@ -118,6 +123,7 @@ function SimulatorPanel({ roomId }) {
     setSim(next)
     if ('gasLeak' in patch) sendCommand(roomId, { simulate: 'gasLeak', value: patch.gasLeak })
     if ('presenceOverride' in patch) sendCommand(roomId, { simulate: 'presence', value: patch.presenceOverride })
+    if ('nodeId' in patch) sendCommand(roomId, { simulate: 'nodeId', value: patch.nodeId })
   }
   const presenceOptions = [
     { value: null, label: 'Ngẫu nhiên' },
@@ -144,6 +150,17 @@ function SimulatorPanel({ roomId }) {
             </button>
           ))}
         </div>
+        <label className="flex items-center gap-2 text-sm text-slate-600">
+          ID node (nút SET/OK):
+          <input
+            type="number"
+            min={1}
+            max={99}
+            value={sim.nodeId}
+            onChange={(e) => update({ nodeId: Math.min(99, Math.max(1, Number(e.target.value) || 1)) })}
+            className="input w-20 py-1"
+          />
+        </label>
         {roomId === 'kitchen' && (
           <label className="flex items-center gap-3 text-sm text-slate-600">
             <Toggle checked={sim.gasLeak} onChange={(v) => update({ gasLeak: v })} label="Giả lập rò gas" />

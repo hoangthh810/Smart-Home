@@ -4,7 +4,7 @@ import { create } from 'zustand'
 const HISTORY_POINTS = 90
 let toastId = 0
 
-const emptyRoom = () => ({ sensors: {}, mode: 'auto', devices: {}, alarm: false, updatedAt: null })
+const emptyRoom = () => ({ sensors: {}, nodeId: null, mode: 'auto', devices: {}, alarm: false, updatedAt: null })
 
 export const useLive = create((set) => ({
   connected: false,
@@ -28,8 +28,8 @@ export const useLive = create((set) => ({
     }))
   },
 
-  onState(room, { mode, devices, alarm }) {
-    set((s) => ({ rooms: { ...s.rooms, [room]: { ...s.rooms[room], mode, devices, alarm } } }))
+  onState(room, { nodeId, mode, devices, alarm }) {
+    set((s) => ({ rooms: { ...s.rooms, [room]: { ...s.rooms[room], nodeId: nodeId ?? null, mode, devices, alarm } } }))
   },
 
   pushToast(message, type = 'info') {

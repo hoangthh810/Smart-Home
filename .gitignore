@@ -5,6 +5,7 @@ dist/
 # Tài liệu cá nhân / ảnh tham khảo (không đưa lên repo)
 img/
 bima.framer.media_.png
+device*.png
 
 # Hệ điều hành / editor
 .DS_Store

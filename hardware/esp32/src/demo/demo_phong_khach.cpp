@@ -1,6 +1,6 @@
 // Demo node phòng khách (chưa có BH1750, INA219)
 //   - PIR (D27) thấy chuyển động → bật đèn (relay 2, D25) + quạt (relay 1, D26)
-//     30 giây không còn chuyển động → tắt cả 2
+//     10 giây không còn chuyển động → tắt cả 2 (5 giây đầu sau khi cấp điện bỏ qua PIR)
 //   - LCD hàng 1: nhiệt độ, độ ẩm (DHT22, D4) · hàng 2: ID node + trạng thái
 //   - Nút SET (D32): mỗi lần bấm ID tăng 1, quá 10 quay về 1 (tự lưu, mất điện không mất)
 #include <Arduino.h>
@@ -17,7 +17,8 @@ const int LIGHT_PIN = 25; // relay 2
 const int SET_PIN = 32;
 
 const int MAX_ID = 10;
-const unsigned long OFF_DELAY_MS = 30000; // không có người 30 giây → tắt
+const unsigned long OFF_DELAY_MS = 10000; // không có người 10 giây → tắt
+const unsigned long PIR_WARMUP_MS = 5000; // bỏ qua PIR lúc mới cấp điện (tránh báo nhầm)
 const unsigned long DHT_EVERY_MS = 2000;
 
 DHT dht(DHT_PIN, DHT22);
@@ -70,7 +71,12 @@ void updateLcd() {
   else snprintf(line, sizeof line, "T:%.1f%cC H:%.0f%%", temperature, 0xDF, humidity);
   lcdLine(0, line);
 
-  // Hàng 2: Node #01   ON 25s
+  // Hàng 2: Node #01   ON  9s  (lúc khởi động: PIR on dinh 5s)
+  if (millis() < PIR_WARMUP_MS) {
+    snprintf(line, sizeof line, "PIR on dinh %lus", (PIR_WARMUP_MS - millis()) / 1000 + 1);
+    lcdLine(1, line);
+    return;
+  }
   char status[9];
   if (devicesOn) {
     unsigned long left = (OFF_DELAY_MS - min(OFF_DELAY_MS, millis() - lastMotion)) / 1000;
@@ -118,7 +124,7 @@ void setup() {
     lcdLine(0, "Smart Home");
     lcdLine(1, "Phong khach...");
   }
-  Serial.println("PIR can ~30-60 giay de on dinh sau khi cap dien");
+  Serial.printf("Bo qua PIR %lus dau de cam bien on dinh\n", PIR_WARMUP_MS / 1000);
   delay(1500);
 }
 
@@ -133,15 +139,17 @@ void loop() {
     updateLcd();
   }
 
-  // PIR: có chuyển động → bật và tính lại 30 giây
-  if (digitalRead(PIR_PIN) == HIGH) {
+  // PIR: có chuyển động → bật và tính lại 10 giây
+  if (now < PIR_WARMUP_MS) {
+    // đang chờ PIR ổn định
+  } else if (digitalRead(PIR_PIN) == HIGH) {
     if (!devicesOn) {
       Serial.printf("[%5lus] PIR: co nguoi\n", now / 1000);
       setDevices(true);
     }
     lastMotion = now;
   } else if (devicesOn && now - lastMotion >= OFF_DELAY_MS) {
-    Serial.printf("[%5lus] PIR: 30s khong co nguoi\n", now / 1000);
+    Serial.printf("[%5lus] PIR: %lus khong co nguoi\n", now / 1000, OFF_DELAY_MS / 1000);
     setDevices(false);
   }
 

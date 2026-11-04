@@ -3,7 +3,7 @@ import { Mail, Plus, Save, X } from 'lucide-react'
 import { useAuth, useCurrentHome } from '../../store/auth'
 import { useDb, useHomeSettings } from '../../store/db'
 import { useLive } from '../../store/live'
-import { Field, PageHeader } from '../../components/ui'
+import { Field, HomeIdCopy, PageHeader } from '../../components/ui'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -77,6 +77,16 @@ export default function HomeSettings() {
           <Field label="Tự tắt đèn & quạt khi không có người sau (phút)" hint="Áp dụng cho các phòng đang ở chế độ Tự động" error={errors.offDelayMin}>
             <input type="number" className="input" value={form.offDelayMin} onChange={set('offDelayMin')} />
           </Field>
+        </div>
+
+        <div className="card space-y-3">
+          <div>
+            <h2 className="font-semibold">Lắp đặt thiết bị</h2>
+            <p className="text-sm text-slate-500">
+              Cài WiFi và ID nhà cho node: giữ nút <b>OK</b> trên node 5 giây → máy tính hoặc điện thoại kết nối WiFi <b>SmartHome-…</b> (mật khẩu hiện trên LCD) → mở trình duyệt vào <b>192.168.4.1</b> (thường tự bật) → dán ID nhà dưới đây, điền WiFi rồi bấm Lưu.
+            </p>
+          </div>
+          <HomeIdCopy id={home.id} />
         </div>
 
         <div className="card space-y-4">

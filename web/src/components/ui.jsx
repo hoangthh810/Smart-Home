@@ -1,6 +1,7 @@
-import { Cpu, X } from 'lucide-react'
+import { Copy, Cpu, X } from 'lucide-react'
 import { useEffect } from 'react'
 import { fmtNodeId } from '../utils/format'
+import { useLive } from '../store/live'
 
 export function PageHeader({ title, subtitle, actions }) {
   return (
@@ -136,5 +137,23 @@ export function Field({ label, hint, error, children }) {
       {hint && !error && <p className="mt-1 text-xs text-slate-400">{hint}</p>}
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
+  )
+}
+
+// ID nhà dùng để cài cho node ESP32 (HOME_ID) khi lắp phần cứng
+export function HomeIdCopy({ id }) {
+  const pushToast = useLive((s) => s.pushToast)
+  const copy = () =>
+    navigator.clipboard
+      .writeText(id)
+      .then(() => pushToast('Đã sao chép ID nhà', 'success'))
+      .catch(() => pushToast('Không sao chép được, hãy bôi đen để chép tay', 'error'))
+  return (
+    <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">
+      ID nhà: <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono break-all text-slate-700 select-all">{id}</code>
+      <button type="button" onClick={copy} className="cursor-pointer rounded p-1 hover:bg-slate-100" title="Sao chép ID nhà" aria-label="Sao chép ID nhà">
+        <Copy size={12} />
+      </button>
+    </p>
   )
 }

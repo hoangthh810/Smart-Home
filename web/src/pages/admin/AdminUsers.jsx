@@ -5,10 +5,11 @@ import { useLive } from '../../store/live'
 import { errorMessage } from '../../services/firebase'
 import { createAccount, createHome, deleteAccount, deleteHome, sendResetPassword, updateAccount, updateHome } from '../../services/accounts'
 import { accountEmail, sendMail } from '../../services/mail'
-import { Badge, EmptyState, Field, Modal, PageHeader } from '../../components/ui'
+import { Badge, EmptyState, Field, HomeIdCopy, Modal, PageHeader } from '../../components/ui'
 import { fmtDate, fmtDateTime } from '../../utils/format'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 
 // Mật khẩu tạm 8 ký tự, bỏ các ký tự dễ nhầm (0/O, 1/l/I)
 const PW_CHARS = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -281,6 +282,7 @@ export default function AdminUsers() {
                   <p className="flex items-center gap-1 text-xs text-slate-500">
                     <MapPin size={12} /> {h.address || 'Chưa có địa chỉ'} · tạo {fmtDate(h.createdAt)} · {h.members.length} tài khoản
                   </p>
+                  <HomeIdCopy id={h.id} />
                 </div>
               </div>
               <div className="flex gap-2">

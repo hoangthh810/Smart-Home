@@ -35,7 +35,7 @@ Hệ thống nhà thông minh giám sát môi trường, trạng thái các phò
 - **Manual/Auto áp dụng theo PHÒNG**, không theo từng thiết bị.
 - **Auto**: PIR có người → bật đèn + quạt; không còn người sau X phút (người dùng cài) → tắt.
 - **Manual**: người dùng bật/tắt đèn, quạt bằng nút trên web; PIR không điều khiển gì nhưng vẫn gửi lên để web hiển thị "Có người/Không có". Buzzer do hệ thống điều khiển.
-- **2 nút nhấn trên node KHÔNG điều khiển đèn/quạt**: SET (D32) đổi ID node, OK (D33) lưu ID / xem thông tin. ID (1–99) hiện trên LCD và gửi lên web (`state.nodeId`), web hiện "Node #01" ở thẻ phòng.
+- **2 nút nhấn trên node KHÔNG điều khiển đèn/quạt**: SET (D32) đổi ID node, OK (D33) lưu ID / xem thông tin; **giữ OK 5 giây** = chế độ cài đặt: node phát WiFi `SmartHome-…`, máy tính/điện thoại vào `192.168.4.1` nhập WiFi (2 mạng), ID nhà, Pi (không làm app). Người dùng xem ID nhà ở Cài đặt nhà, admin ở Nhà & tài khoản. ID (1–99) hiện trên LCD và gửi lên web (`state.nodeId`), web hiện "Node #01" ở thẻ phòng.
 - Ngưỡng nhiệt độ, độ ẩm, ánh sáng **chỉ để hiển thị**, không ảnh hưởng Auto.
 - **Gas vượt ngưỡng**: buzzer kêu + popup cảnh báo trên web + gửi Gmail. Đèn/quạt **giữ nguyên trạng thái** và tạm khoá điều khiển (tránh tia lửa điện).
 - Giá trị `gas` = **chỉ số ADC của MQ-2 (0–4095), không phải ppm** (không hiệu chuẩn được ppm thật). Đo thực tế: không khí sạch ~0–50, xả gas bật lửa ~1000–2400; ngưỡng mặc định 400.

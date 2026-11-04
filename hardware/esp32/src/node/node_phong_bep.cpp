@@ -1,7 +1,8 @@
 // Firmware node phòng bếp – WiFi + MQTT tới Raspberry Pi (bảng topic trong CLAUDE.md)
 //   Gửi sensors mỗi 2 giây, state khi thay đổi (retained) · nhận cmd (web) và config (cài đặt nhà)
 //   Auto (PIR) và cảnh báo gas chạy ngay trên node → mất WiFi/Pi vẫn bật còi, giữ nguyên đèn/quạt
-//   Chân: xem hardware/so-do-node-phong-bep.html · WiFi, IP Pi, ID nhà: include/secrets.h
+//   Chân: xem hardware/so-do-node-phong-bep.html
+//   WiFi, ID nhà, Pi: giữ nút OK 5 giây → cài qua trình duyệt trên máy tính/điện thoại (portal.h); include/secrets.h chỉ là giá trị mặc định
 #include <Arduino.h>
 #include <WiFi.h>
 #include <ESPmDNS.h>
@@ -16,9 +17,19 @@
 
 #if __has_include("secrets.h")
 #include "secrets.h"
-#else
-#error "Chua co include/secrets.h: sao chep include/secrets.example.h thanh secrets.h roi dien WiFi, IP Pi, ID nha"
+#else  // không có secrets.h: node tự vào chế độ cài đặt khi khởi động
+#define WIFI_SSID ""
+#define WIFI_PASS ""
+#define WIFI2_SSID ""
+#define WIFI2_PASS ""
+#define MQTT_HOSTNAME "pi"
+#define MQTT_HOST ""
+#define MQTT_PORT 1883
+#define MQTT_USER "smarthome"
+#define MQTT_PASS ""
+#define HOME_ID ""
 #endif
+#include "portal.h"
 
 const char *ROOM = "kitchen";
 
@@ -48,6 +59,7 @@ Preferences prefs;
 WiFiClient net;
 PubSubClient mqtt(net);
 String base;  // smarthome/{homeId}/kitchen/
+NetConfig cfg;
 
 // Cài đặt (nhận từ Pi qua topic config, lưu flash)
 int gasThreshold = 400;
@@ -70,14 +82,16 @@ char msg[17] = "";
 struct Button {
   int pin;
   bool stable = true, raw = true;
-  unsigned long changedAt = 0;
+  unsigned long changedAt = 0, downAt = 0;
   Button(int p) : pin(p) {}
+  bool held(unsigned long ms) { return !stable && millis() - downAt >= ms; }
   // true đúng 1 lần khi vừa nhấn (lọc nhiễu 30 ms)
   bool pressed() {
     bool r = digitalRead(pin);
     if (r != raw) { raw = r; changedAt = millis(); }
     if (millis() - changedAt > 30 && raw != stable) {
       stable = raw;
+      if (!stable) downAt = millis();
       return !stable;
     }
     return false;
@@ -163,22 +177,22 @@ void onMqtt(char *t, byte *payload, unsigned int len) {
 
 // WiFi: thử 1 mạng 15 giây, không vào được thì đổi sang mạng còn lại
 // (không dùng WiFiMulti vì nó chặn vòng lặp vài giây mỗi lần quét → trễ báo gas)
-const char *WIFI_SSIDS[] = {WIFI_SSID, WIFI2_SSID};
-const char *WIFI_PASSES[] = {WIFI_PASS, WIFI2_PASS};
 int wifiIdx = 0;
 unsigned long lastWifiTry = 0;
 
 void keepWifi(unsigned long now) {
   if (WiFi.status() == WL_CONNECTED) return;
   if (lastWifiTry && now - lastWifiTry < WIFI_SWITCH_MS) return;
-  if (lastWifiTry && strlen(WIFI2_SSID)) wifiIdx = 1 - wifiIdx;
+  if (lastWifiTry && cfg.ssid2.length()) wifiIdx = 1 - wifiIdx;
   lastWifiTry = now;
-  Serial.printf("WiFi: ket noi \"%s\"...\n", WIFI_SSIDS[wifiIdx]);
+  const String &ssid = wifiIdx ? cfg.ssid2 : cfg.ssid1;
+  Serial.printf("WiFi: ket noi \"%s\"...\n", ssid.c_str());
   WiFi.disconnect();
-  WiFi.begin(WIFI_SSIDS[wifiIdx], WIFI_PASSES[wifiIdx]);
+  WiFi.begin(ssid.c_str(), (wifiIdx ? cfg.pass2 : cfg.pass1).c_str());
 }
 
-// Tìm Pi theo tên (pi.local) để đổi mạng nhà ↔ hotspot không phải sửa IP; không thấy thì dùng IP dự phòng
+// Tìm Pi theo tên (pi.local) để đổi mạng nhà ↔ hotspot không phải sửa IP; không thấy thì dùng IP dự phòng.
+// Ở trang cài đặt có thể nhập thẳng IP thay cho tên
 IPAddress piIp;
 bool mdnsOk = false;
 
@@ -187,14 +201,16 @@ void keepConnected(unsigned long now) {
   if (lastRetry && now - lastRetry < RETRY_MS) return;
   lastRetry = now;
   if (!mdnsOk) mdnsOk = MDNS.begin("esp32-bep");
-  if (piIp == IPAddress()) {
-    if (mdnsOk) piIp = MDNS.queryHost(MQTT_HOSTNAME, 2000);  // chặn tối đa 2 giây
+  if (piIp == IPAddress() && !piIp.fromString(cfg.piHost)) {
+    String host = cfg.piHost;
+    if (host.endsWith(".local")) host.remove(host.length() - 6);
+    if (mdnsOk) piIp = MDNS.queryHost(host.c_str(), 2000);  // chặn tối đa 2 giây
     if (piIp == IPAddress()) piIp.fromString(MQTT_HOST);
   }
   mqtt.setServer(piIp, MQTT_PORT);
   String id = "esp32-" + String(ROOM) + "-" + String((uint32_t)ESP.getEfuseMac(), HEX);
-  Serial.printf("MQTT: ket noi %s.local (%s) ... ", MQTT_HOSTNAME, piIp.toString().c_str());
-  if (mqtt.connect(id.c_str(), MQTT_USER, MQTT_PASS)) {
+  Serial.printf("MQTT: ket noi %s (%s) ... ", cfg.piHost.c_str(), piIp.toString().c_str());
+  if (mqtt.connect(id.c_str(), MQTT_USER, cfg.mqttPass.c_str())) {
     Serial.println("OK");
     mqtt.subscribe(topic("cmd").c_str(), 1);
     mqtt.subscribe(topic("config").c_str(), 1);
@@ -270,6 +286,12 @@ void handleButtons(unsigned long now) {
       infoUntil = now + 5000;
     }
   }
+  if (!portal::active && okBtn.held(5000)) {
+    editing = false;
+    infoUntil = 0;
+    mqtt.disconnect();
+    portal::start();
+  }
   if (editing && now > editUntil) {
     editing = false;
     showMsg("Huy cai ID");
@@ -288,7 +310,12 @@ void updateLcd(unsigned long now) {
   if (!lcd) return;
   char l1[24], l2[24];
 
-  if (now < infoUntil) {
+  if (portal::active) {
+    snprintf(l1, sizeof l1, "%s", portal::apName.c_str());
+    if (gasAlarm) snprintf(l2, sizeof l2, "!! CANH BAO GAS");
+    else if ((now / 2000) % 2) snprintf(l2, sizeof l2, "MK: %s", portal::AP_PASS);
+    else snprintf(l2, sizeof l2, "Vao 192.168.4.1");
+  } else if (now < infoUntil) {
     snprintf(l1, sizeof l1, "ID %02d Phong bep", nodeId);
     if (WiFi.status() != WL_CONNECTED) snprintf(l2, sizeof l2, "WiFi: dang noi..");
     else if (!mqtt.connected()) snprintf(l2, sizeof l2, "Pi: chua ket noi");
@@ -349,20 +376,40 @@ void setup() {
   inaOk = ina.begin(&Wire);
   if (!inaOk) Serial.println("Canh bao: khong thay INA219 (0x40) – khong gui dien nang");
 
-  base = String("smarthome/") + HOME_ID + "/" + ROOM + "/";
+  portal::load(cfg, prefs, WIFI_SSID, WIFI_PASS, WIFI2_SSID, WIFI2_PASS, HOME_ID, MQTT_HOSTNAME, MQTT_PASS);
+  char ap[17];
+  snprintf(ap, sizeof ap, "SmartHome-Bep-%02X", (uint8_t)(ESP.getEfuseMac() >> 40));  // phân biệt khi có nhiều node
+  portal::setup(&cfg, &prefs, ap, "Cài đặt node Phòng bếp");
+  base = String("smarthome/") + cfg.home + "/" + ROOM + "/";
   WiFi.mode(WIFI_STA);
   WiFi.setAutoReconnect(false);  // keepWifi tự kết nối lại / đổi mạng
   mqtt.setCallback(onMqtt);
   mqtt.setBufferSize(512);
   mqtt.setSocketTimeout(3);  // Pi tắt thì không treo vòng lặp lâu (logic gas vẫn chạy)
   Serial.printf("Topic: %s#\n", base.c_str());
+  if (!cfg.ready()) portal::start();  // chưa có WiFi / ID nhà → mở cài đặt luôn
+}
+
+// Vừa lưu ở trang cài đặt → kết nối lại theo cài đặt mới
+void applyNetConfig() {
+  base = String("smarthome/") + cfg.home + "/" + ROOM + "/";
+  wifiIdx = 0;
+  lastWifiTry = 0;
+  lastRetry = 0;
+  piIp = IPAddress();
+  showMsg("Da luu cai dat");
+  Serial.printf("Cai dat moi: WiFi \"%s\", nha %s, Pi %s\n", cfg.ssid1.c_str(), cfg.home.c_str(), cfg.piHost.c_str());
 }
 
 void loop() {
   unsigned long now = millis();
-  keepWifi(now);
-  keepConnected(now);
-  mqtt.loop();
+  if (portal::active) {
+    if (portal::loop(now)) applyNetConfig();
+  } else {
+    keepWifi(now);
+    keepConnected(now);
+    mqtt.loop();
+  }
   handleButtons(now);
   runLogic(now);
   applyOutputs();

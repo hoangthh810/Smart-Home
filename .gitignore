@@ -12,3 +12,13 @@ device*.png
 Thumbs.db
 .vscode/
 *.log
+
+# Bí mật – không commit
+hardware/esp32/include/secrets.h
+gateway/.env
+gateway/service-account*.json
+
+# Python / công cụ
+__pycache__/
+.venv/
+.playwright-mcp/

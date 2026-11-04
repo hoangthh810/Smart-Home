@@ -27,7 +27,7 @@ src/
   store/db.js            "Cơ sở dữ liệu" giả lập (sẽ thay bằng API FastAPI)
   store/auth.js          Đăng nhập
   store/live.js          Trạng thái thời gian thực (cảm biến, thiết bị)
-  services/realtime.js   Lớp kết nối MQTT – hiện dùng MockClient, sau thay bằng mqtt.js
+  services/realtime.js   Lớp kết nối realtime – Realtime Database (dữ liệu thật qua Pi) hoặc MockClient (giả lập)
   services/simulator.js  Giả lập 2 ESP32 + logic Auto trên Raspberry Pi
   hooks/                 useRealtime, useRoomControl, useEnergy
   utils/evn.js           Tính tiền điện bậc thang
@@ -35,7 +35,7 @@ src/
   pages/admin/           Tổng quan, Nhà & tài khoản, Cảnh báo, Bảng giá EVN
 ```
 
-## MQTT topic dự kiến
+## MQTT topic
 
 | Topic | Hướng | Payload |
 |---|---|---|
@@ -44,6 +44,9 @@ src/
 | `smarthome/{homeId}/{room}/cmd` | Web → Pi/ESP32 | `{mode: "auto" \| "manual"}` hoặc `{device, value}` |
 | `smarthome/{homeId}/{room}/event` | Pi → Web | `{actor, action}` |
 | `smarthome/{homeId}/{room}/alert` | Pi → Web | `{event: "start" \| "end", type: "gas", ...}` |
+| `smarthome/{homeId}/{room}/config` | Pi → ESP32 | `{gasThreshold, offDelaySec}` (retained, từ cài đặt nhà) |
+
+Web không nói MQTT trực tiếp: gateway trên Pi (`gateway/`) chép sang Realtime Database – `live/{homeId}/{room}/{sensors\|state\|event\|alert}` (Pi ghi), `cmd/{homeId}/{room}` (web ghi lệnh), `settings/{homeId}` (web ghi cài đặt), `members/{homeId}/{uid}` (Pi đồng bộ từ Firestore, dùng cho luật bảo mật `firebase/database.rules.json`). Chưa điền `VITE_FIREBASE_DATABASE_URL` thì web dùng giả lập.
 
 `room` là `living` (phòng khách) hoặc `kitchen` (phòng bếp).
 

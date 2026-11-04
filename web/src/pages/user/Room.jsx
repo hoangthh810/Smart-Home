@@ -4,7 +4,7 @@ import { Bot, Droplets, FlaskConical, Flame, Gauge, Sun, Thermometer, UserCheck,
 import { useCurrentHome } from '../../store/auth'
 import { useHomeSettings } from '../../store/db'
 import { useLive } from '../../store/live'
-import { getSimState, sendCommand } from '../../services/realtime'
+import { USE_SIMULATOR, getSimState, sendCommand } from '../../services/realtime'
 import { ROOMS } from '../../data/constants'
 import { NodeBadge, PageHeader, StatCard, Toggle } from '../../components/ui'
 import { DeviceList, ModeSwitch } from '../../components/RoomWidgets'
@@ -58,10 +58,10 @@ export default function Room() {
           <StatCard
             icon={Flame}
             label="Khí gas"
-            value={`${fmtNumber(s.gas)} ppm`}
+            value={fmtNumber(s.gas)}
             tone="amber"
             warn={room.alarm}
-            hint={room.alarm ? 'VƯỢT NGƯỠNG!' : `Ngưỡng ${settings.gasThreshold} ppm · MQ-2`}
+            hint={room.alarm ? 'VƯỢT NGƯỠNG!' : `Ngưỡng ${settings.gasThreshold} · MQ-2`}
           />
         )}
         <StatCard
@@ -103,14 +103,14 @@ export default function Room() {
             <h2 className="mb-4 font-semibold">{isLiving ? 'Cường độ ánh sáng' : 'Nồng độ khí gas'} (thời gian thực)</h2>
             <SensorChart
               data={history}
-              lines={[isLiving ? { key: 'lux', name: 'Ánh sáng', color: '#f59e0b', unit: 'lux' } : { key: 'gas', name: 'Khí gas', color: '#f97316', unit: 'ppm' }]}
+              lines={[isLiving ? { key: 'lux', name: 'Ánh sáng', color: '#f59e0b', unit: 'lux' } : { key: 'gas', name: 'Chỉ số gas', color: '#f97316', unit: '' }]}
               refLine={isLiving ? { value: settings.luxLow, label: 'Ngưỡng tối' } : { value: settings.gasThreshold, label: 'Ngưỡng cảnh báo' }}
             />
           </div>
         </div>
       </div>
 
-      <SimulatorPanel key={roomId} roomId={roomId} />
+      {USE_SIMULATOR && <SimulatorPanel key={roomId} roomId={roomId} />}
     </>
   )
 }

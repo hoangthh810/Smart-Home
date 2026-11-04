@@ -1,6 +1,7 @@
-// Kết nối Firebase (Auth + Firestore). Cấu hình lấy từ web/.env.local
+// Kết nối Firebase (Auth + Firestore + Realtime Database). Cấu hình lấy từ web/.env.local
 import { initializeApp } from 'firebase/app'
 import { browserSessionPersistence, getAuth, inMemoryPersistence, setPersistence } from 'firebase/auth'
+import { getDatabase } from 'firebase/database'
 import { getFirestore } from 'firebase/firestore'
 
 const config = {
@@ -10,11 +11,14 @@ const config = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
 }
 
 export const app = initializeApp(config)
 export const auth = getAuth(app)
 export const db = getFirestore(app)
+// Chưa điền VITE_FIREBASE_DATABASE_URL → null, web dùng dữ liệu giả lập
+export const rtdb = config.databaseURL ? getDatabase(app) : null
 
 // Mỗi tab một phiên đăng nhập (tiện demo: 1 tab admin, 1 tab user)
 setPersistence(auth, browserSessionPersistence)

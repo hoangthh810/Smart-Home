@@ -99,7 +99,7 @@ export default function AdminDashboard() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{homeName(a.homeId)}</p>
                     <p className="text-xs text-slate-500">
-                      Gas {a.peakValue} ppm · {timeAgo(a.createdAt)}
+                      Chỉ số gas {a.peakValue} · {timeAgo(a.createdAt)}
                       {a.reminders.length > 0 && ` · đã nhắc ${a.reminders.length} lần`}
                     </p>
                   </div>

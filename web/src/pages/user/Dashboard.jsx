@@ -84,7 +84,7 @@ function RoomCard({ roomId, icon: Icon }) {
     { icon: Droplets, label: 'Độ ẩm', value: `${fmtNumber(s.humidity, 0)} %`, warn: s.humidity > settings.humidityHigh },
     roomId === 'living'
       ? { icon: Sun, label: 'Ánh sáng', value: `${fmtNumber(s.lux)} lux`, warn: false, note: s.lux < settings.luxLow ? 'Tối' : null }
-      : { icon: Flame, label: 'Khí gas', value: `${fmtNumber(s.gas)} ppm`, warn: room.alarm },
+      : { icon: Flame, label: 'Khí gas', value: fmtNumber(s.gas), warn: room.alarm },
     { icon: Gauge, label: 'Công suất', value: `${fmtNumber(s.power, 1)} W` },
   ]
 

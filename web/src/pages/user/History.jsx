@@ -53,7 +53,7 @@ function AlertHistory() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-1">
               <p className="font-semibold">
-                Rò rỉ khí gas – {ROOMS[a.room]?.name} · đỉnh {a.peakValue} ppm (ngưỡng {a.threshold})
+                Rò rỉ khí gas – {ROOMS[a.room]?.name} · chỉ số đỉnh {a.peakValue} (ngưỡng {a.threshold})
               </p>
               <p className="flex items-center gap-1 text-sm text-slate-500">
                 <Clock size={14} /> {fmtDateTime(a.createdAt)}

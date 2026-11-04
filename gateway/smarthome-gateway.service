@@ -1,0 +1,17 @@
+# Chạy gateway tự động khi Pi khởi động. Đổi "pi" thành tên user trên Pi của bạn (4 chỗ) rồi chép vào
+# /etc/systemd/system/smarthome-gateway.service – xem README.md
+[Unit]
+Description=Gateway nha thong minh (MQTT <-> Firebase)
+After=network-online.target mosquitto.service
+Wants=network-online.target
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/smarthome/gateway
+EnvironmentFile=/home/pi/smarthome/gateway/.env
+ExecStart=/home/pi/smarthome/gateway/.venv/bin/python main.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

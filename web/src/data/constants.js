@@ -45,7 +45,7 @@ export const DEFAULT_EVN_TIERS = [
 export const DEFAULT_VAT = 8
 
 export const DEFAULT_HOME_SETTINGS = {
-  gasThreshold: 400, // ppm – vượt ngưỡng sẽ kích hoạt cảnh báo
+  gasThreshold: 400, // chỉ số ADC của MQ-2 (0–4095, không phải ppm) – vượt ngưỡng sẽ kích hoạt cảnh báo
   tempHigh: 35, // °C – chỉ để hiển thị
   humidityHigh: 85, // % – chỉ để hiển thị
   luxLow: 50, // lux – chỉ để hiển thị

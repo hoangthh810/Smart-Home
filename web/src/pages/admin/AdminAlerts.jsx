@@ -93,7 +93,7 @@ export default function AdminAlerts() {
                     <p className="text-xs text-slate-500">{ROOMS[a.room]?.name}</p>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="font-semibold text-red-600">{a.peakValue} ppm</span>
+                    <span className="font-semibold text-red-600">{a.peakValue}</span>
                     <p className="text-xs text-slate-400">ngưỡng {a.threshold}</p>
                   </td>
                   <td className="px-4 py-3"><AlertStatus alert={a} /></td>

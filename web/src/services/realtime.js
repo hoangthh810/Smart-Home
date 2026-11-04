@@ -8,11 +8,54 @@
 //   smarthome/{homeId}/{room}/event     Pi -> Web      {actor, action}            (nhật ký thao tác tự động)
 //   smarthome/{homeId}/{room}/alert     Pi -> Web      {event: start|end, type: 'gas', ...}
 //
-// Hiện tại dùng MockClient (giả lập). Khi tích hợp, chỉ cần thay createMockClient bằng
-// mqtt.connect('ws://<ip-raspberry-pi>:9001') của thư viện mqtt.js – phần giao diện giữ nguyên.
+//   smarthome/{homeId}/{room}/config    Pi -> ESP32    {gasThreshold, offDelaySec}  (retained, từ cài đặt nhà)
+//
+// Web không nói MQTT trực tiếp: Pi (gateway/) chép các bản tin trên sang Realtime Database
+//   live/{homeId}/{room}/{sensors|state|event|alert}   Pi ghi, web nghe
+//   cmd/{homeId}/{room}                                web ghi lệnh, Pi chuyển xuống ESP32
+//   settings/{homeId}                                  web ghi cài đặt, Pi gửi xuống ESP32 + dùng khi gửi Gmail
+// Chưa cấu hình Realtime Database hoặc VITE_REALTIME=mock → dùng MockClient (giả lập).
+import { onValue, ref, serverTimestamp, set } from 'firebase/database'
+import { rtdb } from './firebase'
 import { createSimulator } from './simulator'
+import { ROOM_IDS } from '../data/constants'
+
+export const USE_SIMULATOR = !rtdb || import.meta.env.VITE_REALTIME === 'mock'
 
 export const topic = (homeId, room, kind) => `smarthome/${homeId}/${room}/${kind}`
+
+function createFirebaseClient(homeId) {
+  const listeners = new Set()
+  const since = Date.now()
+  const offs = ROOM_IDS.flatMap((room) =>
+    ['sensors', 'state', 'event', 'alert'].map((kind) =>
+      onValue(
+        ref(rtdb, `live/${homeId}/${room}/${kind}`),
+        (snap) => {
+          const payload = snap.val()
+          if (!payload) return
+          if (kind === 'event' && payload.ts < since) return // nhật ký cũ đã ghi lúc trước
+          listeners.forEach((fn) => fn(topic(homeId, room, kind), payload))
+        },
+        (e) => console.error(`Không đọc được live/${homeId}/${room}/${kind}`, e),
+      ),
+    ),
+  )
+
+  return {
+    onMessage: (fn) => listeners.add(fn),
+    publish(t, payload) {
+      const [, , room] = t.split('/')
+      set(ref(rtdb, `cmd/${homeId}/${room}`), { ...payload, ts: serverTimestamp() }).catch((e) =>
+        console.error('Không gửi được lệnh', e),
+      )
+    },
+    end: () => {
+      offs.forEach((off) => off())
+      listeners.clear()
+    },
+  }
+}
 
 function createMockClient(homeId, getSettings) {
   const listeners = new Set()
@@ -44,7 +87,7 @@ let currentHomeId = null
 export function connect(homeId, { getSettings, onMessage }) {
   disconnect()
   currentHomeId = homeId
-  client = createMockClient(homeId, getSettings)
+  client = USE_SIMULATOR ? createMockClient(homeId, getSettings) : createFirebaseClient(homeId)
   client.onMessage((t, payload) => {
     const [, , room, kind] = t.split('/')
     onMessage({ room, kind, payload })
@@ -60,6 +103,15 @@ export function disconnect() {
 export function sendCommand(room, payload) {
   if (!client) return
   client.publish(topic(currentHomeId, room, 'cmd'), payload)
+}
+
+// Cài đặt nhà đang lưu ở trình duyệt (store/db.js) → chép lên để Pi dùng (ngưỡng gas, thời gian tự tắt, email)
+// shortcut: máy nào lưu sau thì thắng, hết khi chuyển cài đặt sang Firestore
+export function syncSettings(homeId, { gasThreshold, offDelayMin, alertEmails }) {
+  if (USE_SIMULATOR || !homeId) return
+  set(ref(rtdb, `settings/${homeId}`), { gasThreshold, offDelayMin, alertEmails }).catch((e) =>
+    console.error('Không đồng bộ được cài đặt nhà', e),
+  )
 }
 
 // Chỉ dành cho giai đoạn giả lập

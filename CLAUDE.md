@@ -34,10 +34,11 @@ Hệ thống nhà thông minh giám sát môi trường, trạng thái các phò
 
 - **Manual/Auto áp dụng theo PHÒNG**, không theo từng thiết bị.
 - **Auto**: PIR có người → bật đèn + quạt; không còn người sau X phút (người dùng cài) → tắt.
-- **Manual**: người dùng bật/tắt đèn, quạt bằng nút trên web. Buzzer do hệ thống điều khiển.
+- **Manual**: người dùng bật/tắt đèn, quạt bằng nút trên web; PIR không điều khiển gì nhưng vẫn gửi lên để web hiển thị "Có người/Không có". Buzzer do hệ thống điều khiển.
 - **2 nút nhấn trên node KHÔNG điều khiển đèn/quạt**: SET (D32) đổi ID node, OK (D33) lưu ID / xem thông tin. ID (1–99) hiện trên LCD và gửi lên web (`state.nodeId`), web hiện "Node #01" ở thẻ phòng.
 - Ngưỡng nhiệt độ, độ ẩm, ánh sáng **chỉ để hiển thị**, không ảnh hưởng Auto.
 - **Gas vượt ngưỡng**: buzzer kêu + popup cảnh báo trên web + gửi Gmail. Đèn/quạt **giữ nguyên trạng thái** và tạm khoá điều khiển (tránh tia lửa điện).
+- Giá trị `gas` = **chỉ số ADC của MQ-2 (0–4095), không phải ppm** (không hiệu chuẩn được ppm thật). Đo thực tế: không khí sạch ~0–50, xả gas bật lửa ~1000–2400; ngưỡng mặc định 400.
 - Popup gas không tự tắt: user bấm "Tôi đã biết" (xác nhận) hoặc "Ẩn tạm" (hiện lại khi admin nhắc).
 - Tiền điện tính theo **bậc thang EVN** + VAT.
 
@@ -51,8 +52,9 @@ Hệ thống nhà thông minh giám sát môi trường, trạng thái các phò
 ## Công nghệ
 
 - **Web** (`web/`): React 19 + Vite + TailwindCSS v4 + Recharts + zustand + react-router-dom + lucide-react. JavaScript (không TypeScript).
-- **Gateway (chưa làm)**: Python trên Pi 5 (paho-mqtt + firebase-admin + smtplib), Mosquitto.
-- **Dữ liệu**: Firebase JS SDK. **Đã chuyển**: đăng nhập (Auth, bằng email), `users/{uid}`, `homes/{id}` (Firestore) – `store/auth.js`. **Còn giả lập**: cài đặt, cảnh báo, nhật ký, giá EVN (`store/db.js`, localStorage) và dữ liệu cảm biến (`services/realtime.js`).
+- **Gateway** (`gateway/`): Python trên Pi 5 (paho-mqtt + firebase-admin + smtplib), Mosquitto. Hướng dẫn cài: `gateway/README.md`. Test logic: `python gateway/test_logic.py`.
+- **Firmware** (`hardware/esp32/`, PlatformIO): test linh kiện `src/test/`, firmware chính `src/node/node_phong_bep.cpp` (env `node_phong_bep`, cấu hình `include/secrets.h` không commit).
+- **Dữ liệu**: Firebase JS SDK. **Đã chuyển**: đăng nhập (Auth, bằng email), `users/{uid}`, `homes/{id}` (Firestore) – `store/auth.js`. **Còn giả lập**: cài đặt, cảnh báo, nhật ký, giá EVN (`store/db.js`, localStorage; cài đặt được chép lên RTDB `settings/` cho Pi). Dữ liệu cảm biến: Realtime Database qua Pi nếu có `VITE_FIREBASE_DATABASE_URL`, không thì giả lập (`services/simulator.js`).
 - Cấu hình trong `web/.env.local` (không commit, mẫu ở `.env.example`). Luật bảo mật Firestore: `firebase/firestore.rules` (dán vào Console → Firestore → Rules).
 
 ## Lệnh
@@ -96,8 +98,11 @@ components/landing/    BrandMark (logo), HeroEmblem, effects (hiệu ứng cuộ
 | `smarthome/{homeId}/{room}/cmd` | Web → Pi/ESP32 | `{mode}` hoặc `{device, value}` |
 | `smarthome/{homeId}/{room}/event` | Pi → Web | `{actor, action}` |
 | `smarthome/{homeId}/{room}/alert` | Pi → Web | `{event: start\|end, type: 'gas', ...}` |
+| `smarthome/{homeId}/{room}/config` | Pi → ESP32 | `{gasThreshold, offDelaySec}` (retained) |
 
-Khi đổi topic/payload phải cập nhật cả bảng này, `web/README.md` và `services/realtime.js`.
+Web ↔ Pi qua Realtime Database: `live/{homeId}/{room}/{sensors|state|event|alert}` (Pi ghi), `cmd/{homeId}/{room}` (web ghi), `settings/{homeId}` (web ghi), `members/{homeId}/{uid}` (Pi đồng bộ từ Firestore `users`, luật `firebase/database.rules.json` dựa vào đây). Auto + cảnh báo gas chạy **trên ESP32** (mất mạng vẫn an toàn); Pi sinh `alert`/`event` từ thay đổi `state`, gửi Gmail.
+
+Khi đổi topic/payload phải cập nhật cả bảng này, `web/README.md`, `services/realtime.js`, `gateway/` và firmware `hardware/esp32/src/node/`.
 
 ## Quy ước code
 
@@ -119,8 +124,8 @@ Khi đổi topic/payload phải cập nhật cả bảng này, `web/README.md` v
 - [x] Giai đoạn 1: Web tĩnh với dữ liệu giả lập (xong 28/10/2026)
 - [x] Project Firebase `smart-home-9efb8`; đăng nhập + nhà + tài khoản trên Firebase, admin cấp tài khoản + gửi Gmail (EmailJS) (29/10/2026)
 - [ ] Chuyển cài đặt, cảnh báo, nhật ký, giá EVN sang Firestore; dữ liệu cảm biến sang Realtime Database
-- [ ] Gateway Python trên Pi 5: Mosquitto, cầu nối MQTT <-> Firebase, logic Auto, cảnh báo gas, gửi Gmail, tạo tài khoản (Admin SDK)
-- [ ] Firmware ESP32 theo topic ở trên, gỡ "Công cụ giả lập" ở trang Phòng
+- [ ] Gateway Python trên Pi 5: Mosquitto, cầu nối MQTT <-> Firebase, cảnh báo gas, gửi Gmail (code xong 05/11/2026, chưa chạy thật); còn: gộp lịch sử điện năng vào Firestore, tạo tài khoản (Admin SDK)
+- [ ] Firmware ESP32 theo topic ở trên: node phòng bếp (code xong, chưa chạy thật), node phòng khách chưa làm. "Công cụ giả lập" ở trang Phòng tự ẩn khi dùng dữ liệu thật
 - [ ] (Sau này) AI dự đoán điện năng
 
 ## Quản lý file này

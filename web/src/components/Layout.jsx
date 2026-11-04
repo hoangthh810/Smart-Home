@@ -8,6 +8,7 @@ import { useAuth, useCurrentHome, useCurrentUser } from '../store/auth'
 import { useDb } from '../store/db'
 import { useLive } from '../store/live'
 import { useRealtime } from '../hooks/useRealtime'
+import { USE_SIMULATOR } from '../services/realtime'
 import { useTheme } from '../store/theme'
 import GasAlertModal from './GasAlertModal'
 import Toasts from './Toasts'
@@ -166,9 +167,9 @@ function ThemeToggle() {
 function ConnectionStatus() {
   const connected = useLive((s) => s.connected)
   return (
-    <span className="flex items-center gap-2 text-xs text-slate-500" title="Đang dùng dữ liệu giả lập – chưa kết nối phần cứng">
+    <span className="flex items-center gap-2 text-xs text-slate-500" title={USE_SIMULATOR ? 'Đang dùng dữ liệu giả lập – chưa kết nối phần cứng' : 'Dữ liệu thật từ ESP32 qua Raspberry Pi'}>
       <span className={`h-2 w-2 rounded-full ${connected ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-      {connected ? 'Đang kết nối (giả lập)' : 'Mất kết nối'}
+      {connected ? (USE_SIMULATOR ? 'Đang kết nối (giả lập)' : 'Đang kết nối') : 'Mất kết nối'}
     </span>
   )
 }
@@ -180,7 +181,7 @@ function GasBanner() {
   return (
     <div className="flex items-center gap-2 bg-red-600 px-4 py-2 text-sm font-medium text-white lg:px-8">
       <AlertTriangle size={18} className="shrink-0" />
-      Phòng bếp đang rò rỉ khí gas ({gas} ppm). Còi báo đang kêu – không bật/tắt thiết bị điện!
+      Phòng bếp đang rò rỉ khí gas (chỉ số {gas}). Còi báo đang kêu – không bật/tắt thiết bị điện!
     </div>
   )
 }

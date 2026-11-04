@@ -37,7 +37,7 @@ export default function HomeSettings() {
     e.preventDefault()
     const num = (k) => Number(form[k])
     const errs = {}
-    if (!(num('gasThreshold') >= 100 && num('gasThreshold') <= 10000)) errs.gasThreshold = 'Nhập giá trị từ 100 đến 10000 ppm'
+    if (!(num('gasThreshold') >= 100 && num('gasThreshold') <= 4095)) errs.gasThreshold = 'Nhập giá trị từ 100 đến 4095'
     if (!(num('offDelayMin') >= 1 && num('offDelayMin') <= 120)) errs.offDelayMin = 'Nhập từ 1 đến 120 phút'
     if (!(num('tempHigh') > 0 && num('tempHigh') < 80)) errs.tempHigh = 'Giá trị không hợp lệ'
     if (!(num('humidityHigh') > 0 && num('humidityHigh') <= 100)) errs.humidityHigh = 'Nhập từ 1 đến 100%'
@@ -71,7 +71,7 @@ export default function HomeSettings() {
             <h2 className="font-semibold">Cảnh báo & tự động</h2>
             <p className="text-sm text-slate-500">Các thông số ảnh hưởng tới cách hệ thống tự xử lý.</p>
           </div>
-          <Field label="Ngưỡng cảnh báo khí gas (ppm)" hint="Vượt ngưỡng: còi kêu, gửi email, hiện cảnh báo trên web" error={errors.gasThreshold}>
+          <Field label="Ngưỡng cảnh báo khí gas (chỉ số 0–4095)" hint="Không khí sạch ~0–50, có gas ~1000–2400. Vượt ngưỡng: còi kêu, gửi email, hiện cảnh báo trên web" error={errors.gasThreshold}>
             <input type="number" className="input" value={form.gasThreshold} onChange={set('gasThreshold')} />
           </Field>
           <Field label="Tự tắt đèn & quạt khi không có người sau (phút)" hint="Áp dụng cho các phòng đang ở chế độ Tự động" error={errors.offDelayMin}>

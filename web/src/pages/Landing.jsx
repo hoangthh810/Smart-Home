@@ -364,12 +364,12 @@ function Solutions() {
 
           <SolutionCard className="md:col-span-4" delay={80} title="Cảnh báo khí gas" desc="Vượt ngưỡng là còi kêu, web báo động và email gửi tới mọi thành viên trong nhà.">
             <div className="absolute inset-0 flex -rotate-[14deg] flex-col items-center justify-center gap-4">
-              <FaintPill className="-translate-x-10">MQ-2 · 124 ppm · An toàn</FaintPill>
+              <FaintPill className="-translate-x-10">MQ-2 · chỉ số 24 · An toàn</FaintPill>
               <span className="relative inline-flex rounded-full p-px shadow-[0_0_40px_rgba(248,113,113,0.45)]">
                 <span className="absolute inset-0 rounded-full bg-gradient-to-r from-rose-400 via-rose-300/30 to-amber-300" />
                 <span className="relative flex items-center gap-3 rounded-full bg-[#2a1426] px-4 py-2.5 text-[15px] font-medium whitespace-nowrap">
                   <span className="flex h-7 w-7 animate-pulse items-center justify-center rounded-full bg-rose-500 text-white"><Flame size={15} /></span>
-                  Rò rỉ gas · 512 ppm
+                  Rò rỉ gas · chỉ số 1850
                 </span>
               </span>
               <FaintPill className="translate-x-12">

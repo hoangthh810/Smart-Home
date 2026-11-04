@@ -1,11 +1,14 @@
 // Kết nối realtime cho nhà của người dùng đang đăng nhập và xử lý các bản tin nhận được.
 import { useEffect } from 'react'
-import { connect, disconnect } from '../services/realtime'
+import { connect, disconnect, syncSettings } from '../services/realtime'
 import { useLive } from '../store/live'
-import { settingsOf, useDb } from '../store/db'
+import { settingsOf, useDb, useHomeSettings } from '../store/db'
 import { ROOMS } from '../data/constants'
 
 export function useRealtime(homeId) {
+  const settings = useHomeSettings(homeId)
+  useEffect(() => syncSettings(homeId, settings), [homeId, settings])
+
   useEffect(() => {
     if (!homeId) return
     const live = useLive.getState()
@@ -37,7 +40,7 @@ function handleAlert(homeId, room, payload) {
   if (payload.event === 'start' && !open) {
     const emails = settingsOf(db, homeId).alertEmails
     db.addAlert({ homeId, room, type: payload.type, peakValue: payload.value, threshold: payload.threshold, emailsSentTo: emails })
-    db.addLog({ homeId, room, actor: 'Hệ thống', action: `Phát hiện khí gas ${payload.value} ppm – bật còi báo` })
+    db.addLog({ homeId, room, actor: 'Hệ thống', action: `Phát hiện khí gas (chỉ số ${payload.value}) – bật còi báo` })
     useLive.getState().pushToast(
       emails.length ? `Đã gửi email cảnh báo tới: ${emails.join(', ')}` : 'Chưa cấu hình email nhận cảnh báo!',
       emails.length ? 'info' : 'error',

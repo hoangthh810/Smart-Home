@@ -25,7 +25,7 @@ export function createSimulator({ getSettings, emit }) {
       nodeId: 2,
       mode: 'auto',
       devices: { light: false, fan: false, buzzer: false },
-      sensors: { temperature: 31, humidity: 72, gas: 120, presence: false, power: 0 },
+      sensors: { temperature: 31, humidity: 72, gas: 30, presence: false, power: 0 },
       lastSeenAt: now,
       presenceOverride: null,
       gasLeak: false,
@@ -66,7 +66,7 @@ export function createSimulator({ getSettings, emit }) {
 
       // Khí gas (chỉ phòng bếp)
       if (roomId === 'kitchen') {
-        s.gas = Math.max(0, Math.round(drift(s.gas, r.gasLeak ? 720 : 120, 0.15, 6)))
+        s.gas = Math.max(0, Math.round(drift(s.gas, r.gasLeak ? 1800 : 30, 0.15, 6)))
         const threshold = settings.gasThreshold
         if (!r.alarm && s.gas >= threshold) {
           r.alarm = true

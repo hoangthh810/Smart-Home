@@ -1,0 +1,24 @@
+{
+  "rules": {
+    "live": {
+      "$home": {
+        ".read": "auth != null && root.child('members').child($home).child(auth.uid).exists()"
+      }
+    },
+    "cmd": {
+      "$home": {
+        "$room": {
+          ".write": "auth != null && root.child('members').child($home).child(auth.uid).exists()",
+          ".validate": "($room === 'living' || $room === 'kitchen') && newData.hasChild('ts')"
+        }
+      }
+    },
+    "settings": {
+      "$home": {
+        ".read": "auth != null && root.child('members').child($home).child(auth.uid).exists()",
+        ".write": "auth != null && root.child('members').child($home).child(auth.uid).exists()",
+        ".validate": "newData.hasChildren(['gasThreshold', 'offDelayMin'])"
+      }
+    }
+  }
+}

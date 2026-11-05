@@ -120,7 +120,7 @@ void handleSave() {
 
   sendPage("<h1>Đã lưu ✔</h1><p>Node đang kết nối WiFi <b>" + esc(cfg->ssid1) +
            "</b>. Bạn có thể đóng trang này và kết nối máy lại WiFi nhà.</p>"
-           "<p><small>Không kết nối được thì giữ nút OK 5 giây để cài lại.</small></p>");
+           "<p><small>Không kết nối được thì giữ nút SET 5 giây để cài lại.</small></p>");
   applyAt = millis() + 1500;  // để trang kịp gửi về trình duyệt rồi mới tắt WiFi cài đặt
 }
 

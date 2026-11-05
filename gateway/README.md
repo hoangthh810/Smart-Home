@@ -73,7 +73,7 @@ Sửa code xong: chép lại bằng `scp` rồi `sudo systemctl restart smarthom
 ## Bước 5 – ESP32
 
 1. Nạp env `node_phong_bep`. `include/secrets.h` (không commit) chỉ là giá trị mặc định lúc nạp; không có file này node tự vào chế độ cài đặt.
-2. Cài mạng không cần sửa code: **giữ nút OK 5 giây** → máy tính/điện thoại kết nối WiFi `SmartHome-Bep-xx` (mật khẩu trên LCD) → mở `192.168.4.1` → nhập WiFi nhà (2.4 GHz), WiFi dự phòng, ID nhà (web: Cài đặt nhà → Lắp đặt thiết bị), tên Pi (`pi`) và mật khẩu MQTT (trong `.env` trên Pi) → Lưu.
+2. Cài mạng không cần sửa code: **giữ nút SET 5 giây** → máy tính/điện thoại kết nối WiFi `SmartHome-Bep-xx` (mật khẩu trên LCD) → mở `192.168.4.1` → nhập WiFi nhà (2.4 GHz), WiFi dự phòng, ID nhà (web: Cài đặt nhà → Lắp đặt thiết bị), tên Pi (`pi`) và mật khẩu MQTT (trong `.env` trên Pi) → Lưu.
 3. Serial Monitor phải thấy `MQTT: ket noi ... OK`; bấm nhanh OK trên node hiện IP / trạng thái kết nối.
 
 ## Gỡ lỗi nhanh

@@ -54,6 +54,6 @@ Web không nói MQTT trực tiếp: gateway trên Pi (`gateway/`) chép sang Rea
 
 - **Tự động**: PIR phát hiện có người → bật đèn + quạt; không có người sau X phút (cài trong "Cài đặt nhà") → tắt.
 - **Thủ công**: người dùng bật/tắt đèn, quạt bằng nút trên web (không có nút bấm vật lý điều khiển thiết bị).
-- **Nút nhấn trên node** (SET = D32, OK = D33): chỉ để cài ID node (1–99, lưu flash). ID hiện trên LCD và gửi lên web trong `state.nodeId`.
+- **Nút nhấn trên node** (chỉ 1 nút SET = D32): bấm để tăng ID node 1 → 10 rồi quay về 1 (tự lưu flash), giữ 5 giây để cài WiFi; không bật/tắt đèn quạt. ID hiện trên LCD và gửi lên web trong `state.nodeId`.
 - **Khí gas vượt ngưỡng**: còi kêu, gửi email, hiện cảnh báo trên web; đèn và quạt giữ nguyên, tạm khoá điều khiển (tránh phát tia lửa điện).
 - Ngưỡng nhiệt độ, độ ẩm, ánh sáng chỉ để hiển thị, không ảnh hưởng chế độ Tự động.

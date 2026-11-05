@@ -2,7 +2,7 @@
 //   Gửi sensors mỗi 2 giây, state khi thay đổi (retained) · nhận cmd (web) và config (cài đặt nhà)
 //   Auto (PIR) và cảnh báo gas chạy ngay trên node → mất WiFi/Pi vẫn bật còi, giữ nguyên đèn/quạt
 //   Chân: xem hardware/so-do-node-phong-bep.html
-//   WiFi, ID nhà, Pi: giữ nút OK 5 giây → cài qua trình duyệt trên máy tính/điện thoại (portal.h); include/secrets.h chỉ là giá trị mặc định
+//   WiFi, ID nhà, Pi: giữ nút SET 5 giây → cài qua trình duyệt trên máy tính/điện thoại (portal.h); include/secrets.h chỉ là giá trị mặc định
 #include <Arduino.h>
 #include <WiFi.h>
 #include <ESPmDNS.h>
@@ -24,10 +24,14 @@
 #define WIFI2_PASS ""
 #define MQTT_HOSTNAME "pi"
 #define MQTT_HOST ""
+#define MQTT_HOST2 ""
 #define MQTT_PORT 1883
 #define MQTT_USER "smarthome"
 #define MQTT_PASS ""
 #define HOME_ID ""
+#endif
+#ifndef MQTT_HOST2  // secrets.h cũ chưa có dòng này
+#define MQTT_HOST2 ""
 #endif
 #include "portal.h"
 
@@ -40,8 +44,7 @@ const int MQ2_PIN = 34;
 const int FAN_PIN = 26;    // relay 1
 const int LIGHT_PIN = 25;  // relay 2
 const int BUZZER_PIN = 23;
-const int SET_PIN = 32;
-const int OK_PIN = 33;
+const int SET_PIN = 32;  // nút duy nhất: bấm = đổi ID node, giữ 5 giây = cài đặt mạng
 
 const unsigned long SENSOR_EVERY_MS = 2000;
 const unsigned long STATE_EVERY_MS = 30000;  // gửi lại state định kỳ phòng khi mất bản tin
@@ -49,8 +52,7 @@ const unsigned long PIR_WARMUP_MS = 30000;   // HC-SR501 cần 30–60 giây ổ
 const unsigned long GAS_WARMUP_MS = 60000;   // sợi đốt MQ-2 chưa nóng thì số đo chưa đúng
 const unsigned long RETRY_MS = 10000;
 const unsigned long WIFI_SWITCH_MS = 15000;
-const unsigned long EDIT_TIMEOUT_MS = 10000;
-const int MAX_ID = 99;
+const int MAX_ID = 10;
 
 DHT dht(DHT_PIN, DHT22);
 Adafruit_INA219 ina(0x40);
@@ -73,10 +75,9 @@ int gas = 0;
 bool presence = false, inaOk = false, stateDirty = true;
 unsigned long lastMotion = 0, lastSensors = 0, lastState = 0, lastRetry = 0, lastLcd = 0;
 
-// Nút: SET vào chế độ cài ID / tăng ID, OK lưu ID hoặc xem thông tin
-bool editing = false;
-int editId = 0;
-unsigned long editUntil = 0, infoUntil = 0, msgUntil = 0;
+// Nút SET: bấm = tăng ID (tự lưu) + hiện thông tin node, giữ 5 giây = cài đặt mạng
+bool setWasDown = false, setLong = false;
+unsigned long infoUntil = 0, msgUntil = 0;
 char msg[17] = "";
 
 struct Button {
@@ -97,7 +98,7 @@ struct Button {
     return false;
   }
 };
-Button setBtn{SET_PIN}, okBtn{OK_PIN};
+Button setBtn{SET_PIN};
 
 // ---------- Thiết bị ----------
 void applyOutputs() {
@@ -205,7 +206,10 @@ void keepConnected(unsigned long now) {
     String host = cfg.piHost;
     if (host.endsWith(".local")) host.remove(host.length() - 6);
     if (mdnsOk) piIp = MDNS.queryHost(host.c_str(), 2000);  // chặn tối đa 2 giây
-    if (piIp == IPAddress()) piIp.fromString(MQTT_HOST);
+    // Không thấy theo tên → thử luân phiên 2 IP dự phòng (WiFi nhà / hotspot) mỗi lần kết nối lại
+    static bool useHost2 = false;
+    if (piIp == IPAddress()) piIp.fromString(useHost2 && strlen(MQTT_HOST2) ? MQTT_HOST2 : MQTT_HOST);
+    useHost2 = !useHost2;
   }
   mqtt.setServer(piIp, MQTT_PORT);
   String id = "esp32-" + String(ROOM) + "-" + String((uint32_t)ESP.getEfuseMac(), HEX);
@@ -267,35 +271,25 @@ void showMsg(const char *text) {
 }
 
 void handleButtons(unsigned long now) {
-  if (setBtn.pressed()) {
-    editId = editing ? editId % MAX_ID + 1 : nodeId;
-    editing = true;
-    editUntil = now + EDIT_TIMEOUT_MS;
-    infoUntil = 0;
-  }
-  if (okBtn.pressed()) {
-    if (editing) {
-      editing = false;
-      nodeId = editId;
-      prefs.putInt("id", nodeId);
-      char t[17];
-      snprintf(t, sizeof t, "Da luu ID %02d", nodeId);
-      showMsg(t);
-      stateDirty = true;
-    } else {
-      infoUntil = now + 5000;
-    }
-  }
-  if (!portal::active && okBtn.held(5000)) {
-    editing = false;
+  setBtn.pressed();  // cập nhật trạng thái nút (lọc nhiễu)
+  bool down = !setBtn.stable;
+  if (!portal::active && !setLong && setBtn.held(5000)) {
+    setLong = true;
     infoUntil = 0;
     mqtt.disconnect();
     portal::start();
   }
-  if (editing && now > editUntil) {
-    editing = false;
-    showMsg("Huy cai ID");
+  // Đổi ID khi nhả nút (giữ để vào cài đặt thì không đổi), quá MAX_ID quay về 1
+  if (setWasDown && !down) {
+    if (!setLong) {
+      nodeId = nodeId % MAX_ID + 1;
+      prefs.putInt("id", nodeId);
+      stateDirty = true;
+      infoUntil = now + 5000;
+    }
+    setLong = false;
   }
+  setWasDown = down;
 }
 
 // ---------- LCD ----------
@@ -325,7 +319,6 @@ void updateLcd(unsigned long now) {
     else snprintf(l1, sizeof l1, "#%02d %4.1f%cC %2.0f%%", nodeId, temperature, 0xDF, humidity);
 
     if (gasAlarm) snprintf(l2, sizeof l2, (now / 500) % 2 ? "!! CANH BAO GAS" : "G:%d KHOA DK", gas);
-    else if (editing) snprintf(l2, sizeof l2, "Cai ID: %02d  OK?", editId);
     else if (now < msgUntil) snprintf(l2, sizeof l2, "%s", msg);
     else if (now < GAS_WARMUP_MS) snprintf(l2, sizeof l2, "MQ-2 nong %2lus", (GAS_WARMUP_MS - now) / 1000 + 1);
     else snprintf(l2, sizeof l2, "G:%-4d %3.1fW %s", gas, powerW, !mqtt.connected() ? "OFF" : autoMode ? "AUTO" : "MAN");
@@ -359,7 +352,6 @@ void setup() {
   applyOutputs();
   pinMode(PIR_PIN, INPUT_PULLDOWN);
   pinMode(SET_PIN, INPUT_PULLUP);
-  pinMode(OK_PIN, INPUT_PULLUP);
   analogReadResolution(12);
   analogSetPinAttenuation(MQ2_PIN, ADC_11db);
 

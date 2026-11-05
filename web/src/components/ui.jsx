@@ -52,7 +52,7 @@ export function Badge({ tone = 'slate', children }) {
 // ID node ESP32 của phòng (trùng với số hiện trên LCD của node)
 export function NodeBadge({ id }) {
   return (
-    <span title="ID node ESP32 – cài bằng nút SET/OK trên node, hiện trên LCD">
+    <span title="ID node ESP32 – cài bằng nút SET trên node (1–10), hiện trên LCD">
       <Badge tone={id == null ? 'slate' : 'violet'}>
         <Cpu size={12} /> Node {fmtNodeId(id)}
       </Badge>

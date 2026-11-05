@@ -3,7 +3,7 @@
 // Cấu trúc topic dự kiến (dùng chung cho ESP32, Raspberry Pi và Web):
 //   smarthome/{homeId}/{room}/sensors   ESP32 -> Web   {temperature, humidity, lux|gas, presence, power}
 //   smarthome/{homeId}/{room}/state     ESP32 -> Web   {nodeId, mode, devices: {light, fan, buzzer}, alarm}
-//                                                      nodeId: ID cài bằng nút SET/OK trên node, hiện trên LCD
+//                                                      nodeId: ID (1–10) cài bằng nút SET trên node, hiện trên LCD
 //   smarthome/{homeId}/{room}/cmd       Web -> Pi/ESP32 {mode} | {device, value}
 //   smarthome/{homeId}/{room}/event     Pi -> Web      {actor, action}            (nhật ký thao tác tự động)
 //   smarthome/{homeId}/{room}/alert     Pi -> Web      {event: start|end, type: 'gas', ...}

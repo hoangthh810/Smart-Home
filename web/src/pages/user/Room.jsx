@@ -151,13 +151,13 @@ function SimulatorPanel({ roomId }) {
           ))}
         </div>
         <label className="flex items-center gap-2 text-sm text-slate-600">
-          ID node (nút SET/OK):
+          ID node (nút SET):
           <input
             type="number"
             min={1}
-            max={99}
+            max={10}
             value={sim.nodeId}
-            onChange={(e) => update({ nodeId: Math.min(99, Math.max(1, Number(e.target.value) || 1)) })}
+            onChange={(e) => update({ nodeId: Math.min(10, Math.max(1, Number(e.target.value) || 1)) })}
             className="input w-20 py-1"
           />
         </label>

@@ -35,7 +35,7 @@ Hệ thống nhà thông minh giám sát môi trường, trạng thái các phò
 - **Manual/Auto áp dụng theo PHÒNG**, không theo từng thiết bị.
 - **Auto**: PIR có người → bật đèn + quạt; không còn người sau X phút (người dùng cài) → tắt.
 - **Manual**: người dùng bật/tắt đèn, quạt bằng nút trên web; PIR không điều khiển gì nhưng vẫn gửi lên để web hiển thị "Có người/Không có". Buzzer do hệ thống điều khiển.
-- **2 nút nhấn trên node KHÔNG điều khiển đèn/quạt**: SET (D32) đổi ID node, OK (D33) lưu ID / xem thông tin; **giữ OK 5 giây** = chế độ cài đặt: node phát WiFi `SmartHome-…`, máy tính/điện thoại vào `192.168.4.1` nhập WiFi (2 mạng), ID nhà, Pi (không làm app). Người dùng xem ID nhà ở Cài đặt nhà, admin ở Nhà & tài khoản. ID (1–99) hiện trên LCD và gửi lên web (`state.nodeId`), web hiện "Node #01" ở thẻ phòng.
+- **Node chỉ dùng 1 nút nhấn SET (D32), KHÔNG điều khiển đèn/quạt**: mỗi lần bấm ID node tăng 1, quá 10 quay về 1 (tự lưu flash, LCD hiện ID + trạng thái mạng); **giữ SET 5 giây** = chế độ cài đặt: node phát WiFi `SmartHome-…`, máy tính/điện thoại vào `192.168.4.1` nhập WiFi (2 mạng), ID nhà, Pi (không làm app). Người dùng xem ID nhà ở Cài đặt nhà, admin ở Nhà & tài khoản. ID (1–10) hiện trên LCD và gửi lên web (`state.nodeId`), web hiện "Node #01" ở thẻ phòng.
 - Ngưỡng nhiệt độ, độ ẩm, ánh sáng **chỉ để hiển thị**, không ảnh hưởng Auto.
 - **Gas vượt ngưỡng**: buzzer kêu + popup cảnh báo trên web + gửi Gmail. Đèn/quạt **giữ nguyên trạng thái** và tạm khoá điều khiển (tránh tia lửa điện).
 - Giá trị `gas` = **chỉ số ADC của MQ-2 (0–4095), không phải ppm** (không hiệu chuẩn được ppm thật). Đo thực tế: không khí sạch ~0–50, xả gas bật lửa ~1000–2400; ngưỡng mặc định 400.
@@ -124,8 +124,8 @@ Khi đổi topic/payload phải cập nhật cả bảng này, `web/README.md`, 
 - [x] Giai đoạn 1: Web tĩnh với dữ liệu giả lập (xong 28/10/2026)
 - [x] Project Firebase `smart-home-9efb8`; đăng nhập + nhà + tài khoản trên Firebase, admin cấp tài khoản + gửi Gmail (EmailJS) (29/10/2026)
 - [ ] Chuyển cài đặt, cảnh báo, nhật ký, giá EVN sang Firestore; dữ liệu cảm biến sang Realtime Database
-- [ ] Gateway Python trên Pi 5: Mosquitto, cầu nối MQTT <-> Firebase, cảnh báo gas, gửi Gmail (code xong 05/11/2026, chưa chạy thật); còn: gộp lịch sử điện năng vào Firestore, tạo tài khoản (Admin SDK)
-- [ ] Firmware ESP32 theo topic ở trên: node phòng bếp (code xong, chưa chạy thật), node phòng khách chưa làm. "Công cụ giả lập" ở trang Phòng tự ẩn khi dùng dữ liệu thật
+- [ ] Gateway Python trên Pi 5: Mosquitto, cầu nối MQTT <-> Firebase, cảnh báo gas, gửi Gmail (chạy thật trên Pi 05/11/2026, chưa điền Gmail App Password); còn: gộp lịch sử điện năng vào Firestore, tạo tài khoản (Admin SDK)
+- [ ] Firmware ESP32 theo topic ở trên: node phòng bếp (chạy thật 05/11/2026: WiFi → MQTT → Pi OK, chưa lắp INA219), node phòng khách chưa làm. "Công cụ giả lập" ở trang Phòng tự ẩn khi dùng dữ liệu thật
 - [ ] (Sau này) AI dự đoán điện năng
 
 ## Quản lý file này

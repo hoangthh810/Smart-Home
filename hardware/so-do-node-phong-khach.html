@@ -82,7 +82,7 @@
 <body>
 <div class="wrap">
   <h1>Sơ đồ nối dây – Node phòng khách (ESP32)</h1>
-  <p class="sub">ESP32 NodeMCU LuaNode32 30 chân · DHT22 · BH1750 · PIR · INA219 · LCD1602 I2C · 2 relay 5V · Quạt mini · LED · 2 nút nhấn. Rê chuột vào dây hoặc vào hàng trong bảng để làm nổi bật.</p>
+  <p class="sub">ESP32 NodeMCU LuaNode32 30 chân · DHT22 · BH1750 · PIR · INA219 · LCD1602 I2C · 2 relay 5V · Quạt mini · LED · 1 nút nhấn SET. Rê chuột vào dây hoặc vào hàng trong bảng để làm nổi bật.</p>
 
   <div class="card">
     <h2>1. Sơ đồ tổng quát</h2>
@@ -161,14 +161,11 @@
 
   <div class="card">
     <h2>5. Nút nhấn & LCD: cài ID node</h2>
-    <p>Đèn và quạt <b>chỉ điều khiển qua web</b> (chế độ Thủ công) hoặc tự động theo PIR (chế độ Tự động). 2 nút nhấn trên node <b>không</b> bật/tắt thiết bị mà dùng để <b>cài ID cho node</b>. ID hiện trên LCD và được gửi lên web để biết node nào đang gắn ở phòng nào.</p>
+    <p>Đèn và quạt <b>chỉ điều khiển qua web</b> (chế độ Thủ công) hoặc tự động theo PIR (chế độ Tự động). Node chỉ dùng <b>1 nút SET</b> (D32), <b>không</b> bật/tắt thiết bị mà dùng để <b>cài ID cho node</b> (1 → 10). ID hiện trên LCD và được gửi lên web để biết node nào đang gắn ở phòng nào.</p>
     <table>
       <thead><tr><th>Thao tác</th><th>Kết quả</th></tr></thead>
       <tbody>
-        <tr><td>Bấm <b>OK</b> (D33) lúc bình thường</td><td>LCD hiện thông tin node trong 5 giây: <code>ID 01 · Phong khach</code>, WiFi, IP</td></tr>
-        <tr><td>Bấm <b>SET</b> (D32)</td><td>Vào chế độ cài ID, LCD hiện <code>Cai ID: 01</code>. Mỗi lần bấm SET tăng ID thêm 1 (1 → 99 rồi quay về 1)</td></tr>
-        <tr><td>Bấm <b>OK</b> khi đang cài ID</td><td>Lưu ID vào bộ nhớ flash (giữ khi mất điện), LCD hiện <code>Da luu ID 02</code>, gửi ID mới lên web</td></tr>
-        <tr><td>Không bấm gì 10 giây khi đang cài</td><td>Huỷ, giữ ID cũ</td></tr>
+        <tr><td>Bấm <b>SET</b> (D32)</td><td>ID node tăng thêm 1 (1 → 10 rồi quay về 1), tự lưu vào flash (giữ khi mất điện) và gửi lên web. LCD hiện 5 giây: <code>ID 01 Phong khach</code> + WiFi/IP</td></tr>
       </tbody>
     </table>
     <p style="margin-top:10px">Màn hình bình thường: dòng 1 <code>#01 29.5C 70%</code>, dòng 2 <code>245lx 3.2W AUTO</code>. Trên web, ID node hiện ở thẻ phòng (Tổng quan) và trang chi tiết phòng.</p>
@@ -238,7 +235,7 @@ const ESP_RIGHT = ['D23', 'D22', 'TX0', 'RX0', 'D21', 'D19', 'D18', 'D5', 'TX2',
 
 // Module: side = phía đặt module (chân quay về phía ESP32)
 const MODULES = [
-  { id: 'btn', side: 'left', title: '2 nút nhấn B3F-4055', sub: 'Cài ID node (xem mục 5)', pins: [['b1', 'Nút SET (chân 1)'], ['b2', 'Nút OK (chân 1)'], ['g', 'Chân chéo của cả 2 nút']] },
+  { id: 'btn', side: 'left', title: 'Nút nhấn SET B3F-4055', sub: 'Cài ID node (xem mục 5)', pins: [['b1', 'Nút SET (chân 1)'], ['g', 'Chân chéo của nút']] },
   { id: 'relay2', side: 'left', title: 'Relay 2 – Đèn', sub: '⚠ Mua thêm · jumper ở H', pins: [['in', 'IN'], ['vcc', 'VCC (DC+)'], ['gnd', 'GND (DC−)'], ['com', 'COM'], ['no', 'NO']] },
   { id: 'led', side: 'left', title: 'Đèn LED đỏ 5mm', sub: 'Xem mục 3', pins: [['a', 'Anode (qua R 330Ω)'], ['k', 'Cathode (chân ngắn)']] },
   { id: 'relay', side: 'left', title: 'Relay 1 – Quạt', sub: 'Jumper ở H (kích mức cao)', pins: [['in', 'IN'], ['vcc', 'VCC (DC+)'], ['gnd', 'GND (DC−)'], ['com', 'COM'], ['no', 'NO']] },
@@ -258,8 +255,7 @@ const WIRES = [
   ['esp.GND_L', 'rail.GND'],
   ['esp.GND_R', 'rail.GND'],
 
-  ['btn.b1', 'esp.D32', 'SET: đổi ID · INPUT_PULLUP, nhấn = LOW', C.btn],
-  ['btn.b2', 'esp.D33', 'OK: lưu ID / xem thông tin · INPUT_PULLUP', C.btn],
+  ['btn.b1', 'esp.D32', 'SET: bấm đổi ID 1→10 · INPUT_PULLUP, nhấn = LOW', C.btn],
   ['btn.g', 'rail.GND'],
 
   ['relay2.in', 'esp.D25', 'HIGH = đèn sáng'],

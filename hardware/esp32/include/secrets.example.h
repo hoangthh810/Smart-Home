@@ -8,7 +8,8 @@
 #define WIFI2_PASS ""
 
 #define MQTT_HOSTNAME "pi"             // hostname của Raspberry Pi → tìm theo tên pi.local, đổi mạng không phải sửa IP
-#define MQTT_HOST "192.168.1.25"       // IP dự phòng khi không tìm được theo tên
+#define MQTT_HOST "192.168.1.25"       // IP dự phòng (WiFi nhà) khi không tìm được theo tên
+#define MQTT_HOST2 ""                  // IP dự phòng thứ 2 (hotspot), để "" nếu không dùng
 #define MQTT_PORT 1883
 #define MQTT_USER "smarthome"          // user tạo bằng mosquitto_passwd trên Pi
 #define MQTT_PASS "mat-khau-mqtt"

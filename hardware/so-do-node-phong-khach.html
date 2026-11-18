@@ -197,6 +197,118 @@
     </table>
     <div class="warn" style="margin-top:14px"><b>Cho node phòng bếp sau này:</b> giỏ hàng hiện có <b>1</b> ESP32, 1 DHT22, 1 INA219, 1 LCD, 1 relay, 1 quạt. Theo kiến trúc 2 node (mỗi phòng 1 ESP32) thì cần thêm 1 bộ tương tự cho phòng bếp (MQ-2 và buzzer đã có).</div>
   </div>
+  <!-- ===================== MẠCH XANH (PCB đục lỗ) ===================== -->
+  <div class="card" id="mach-xanh">
+    <h2>8. Bố trí linh kiện trên mạch xanh 10 × 15 cm</h2>
+    <p>Mạch xanh (PCB đục lỗ, bước lỗ 2,54 mm) 10 × 15 cm có khoảng <b>58 cột × 38 hàng</b> lỗ. Hình dưới vẽ <b>đúng tỉ lệ</b>, nhìn từ <b>mặt trên</b> (mặt cắm linh kiện). Toạ độ ghi kiểu <code>C25·H33</code> = cột 25 (đếm từ trái), hàng 33 (đếm từ trên). Mạch thật có thể hơn/kém 1–2 lỗ – đếm lại rồi dịch cả bố cục, giữ nguyên vị trí tương đối.</p>
+    <div class="pcb-legend" id="pcb-legend"></div>
+    <div class="pcb" id="pcb"></div>
+    <p class="hint">Rê chuột vào một hàng trong bảng mục 9 để làm nổi bật dây đó trên hình. Đường thẳng mảnh chỉ cho biết <b>2 điểm nào nối với nhau</b> – dây thật đi vòng tuỳ ý cho gọn, miễn đúng 2 đầu.</p>
+    <div class="grid2">
+      <div>
+        <h3>Chia vùng</h3>
+        <ul>
+          <li><b>Bên trái – vùng công suất:</b> 2 relay, INA219, ray <b>5V tải</b>, đèn LED, cổng quạt. Dòng lớn và nhiễu từ relay/quạt nằm gọn một bên.</li>
+          <li><b>Giữa – ESP32</b> cắm trên 2 hàng rào cái, <b>cổng USB quay ra mép dưới</b> để cắm cáp. Phía trên ESP32 là cổng PIR, LCD và nút SET.</li>
+          <li><b>Bên phải – vùng cảm biến/I2C:</b> 4 đường bus 3V3 · GND · SDA · SCL chạy dọc, BH1750 ở góc trên (ngửa lên đón sáng), DHT22 ở mép phải, <b>xa ESP32 và relay</b> (2 thứ này toả nhiệt làm sai nhiệt độ).</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Linh kiện không hàn thẳng lên mạch</h3>
+        <ul>
+          <li><b>Relay 1, Relay 2:</b> dán lên mạch bằng băng keo xốp 2 mặt (hoặc cột đồng M3), nối 3 chân VCC/GND/IN sang hàng rào đực <b>H1, H2</b> bằng dây Dupont cái-cái ngắn. Đầu tải (COM, NO) vặn vít.</li>
+          <li><b>PIR, LCD:</b> gắn trên nắp/hộp, nối về hàng rào đực <b>J2, J3</b> bằng dây Dupont cái-cái 20 cm.</li>
+          <li><b>Quạt:</b> dây đỏ vào cổng <b>J1+</b>, dây đen vào <b>J1−</b>.</li>
+          <li>ESP32, INA219, BH1750, DHT22 cắm trên <b>hàng rào cái</b> → rút ra được, hỏng thì thay, không phải hàn lại.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="warn"><b>Đổi so với breadboard:</b> thêm tụ <b>C1 470 µF</b> giữa 5V và GND gần ESP32 (giảm sụt áp khi relay đóng/WiFi phát → đỡ reset). <b>Chưa có INA219:</b> cắm tạm 1 dây nối từ chân VIN+ sang VIN− trên hàng rào cái của INA219 (giống dây cầu trên breadboard), lắp INA219 thì rút dây đó ra.</div>
+  </div>
+
+  <div class="card">
+    <h2>9. Danh sách mối nối trên mạch</h2>
+    <p class="hint"><b>Cầu thiếc</b> = 2 lỗ kề nhau, nối bằng thiếc hoặc mẩu chân linh kiện thừa ở mặt dưới. <b>Dây có vỏ</b> = dây đơn lõi (lõi dây mạng LAN rất vừa) đi ở mặt trên. Hàn xong dây nào đánh dấu ✓ vào cột cuối.</p>
+    <table id="pcb-table">
+      <thead><tr><th>#</th><th>Từ</th><th>Tới</th><th>Cách nối</th><th>Ghi chú</th><th>✓</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>10. Hướng dẫn hàn mạch xanh cho người mới</h2>
+    <div class="grid2">
+      <div>
+        <h3>Dụng cụ & vật tư</h3>
+        <ul>
+          <li><b>Mỏ hàn có chỉnh nhiệt</b> 60 W, để ~330–350 °C, mũi nhọn hoặc mũi dẹt nhỏ.</li>
+          <li><b>Thiếc 0,6–0,8 mm có lõi nhựa thông</b> (loại 63/37 dễ hàn nhất), thêm hộp nhựa thông/flux.</li>
+          <li>Bọt biển ướt hoặc búi đồng để lau mũi, giá đỡ mỏ hàn.</li>
+          <li>Kìm cắt chân, kìm tuốt dây, <b>dây hút thiếc</b> hoặc ống hút thiếc (sửa chỗ hàn lỗi).</li>
+          <li><b>Đồng hồ VOM</b> có chế độ đo thông mạch (kêu tít).</li>
+          <li><b>Hàng rào cái</b> 1×40 × 2 thanh: ESP32 (2×15), INA219 (6), BH1750 (5), DHT22 (3).</li>
+          <li><b>Hàng rào đực</b> 1×40 × 1 thanh: J1 (2), J2 (3), J3 (4), H1 (3), H2 (3).</li>
+          <li>Dây đồng đơn lõi: 1 đoạn dây mạng LAN (8 lõi) là đủ – lột vỏ làm bus, giữ vỏ làm dây nối.</li>
+          <li>Tụ hoá 470 µF 16 V, băng keo xốp 2 mặt, dây Dupont cái-cái 10 cm và 20 cm.</li>
+        </ul>
+        <h3>"Hàng rào" là gì</h3>
+        <ul>
+          <li><b>Hàng rào đực</b> (pin header): hàng chân kim loại nhô lên – để cắm dây Dupont cái vào.</li>
+          <li><b>Hàng rào cái</b> (female header): hàng lỗ – để cắm module có chân đực (ESP32, INA219...).</li>
+          <li>Hàng rào đực bẻ tay theo rãnh. Hàng rào cái phải <b>cắt bằng kìm ngay tại 1 lỗ thừa</b> (mất 1 lỗ), dũa phẳng mép.</li>
+          <li><b>Mẹo hàn thẳng:</b> cắm hàng rào cái vào mạch, <b>cắm luôn module lên trên</b>, lật mạch, hàn 2 chân ở 2 đầu trước → kiểm tra thẳng, đúng khoảng cách → mới hàn các chân còn lại. ESP32 bắt buộc làm vậy (2 hàng cách nhau đúng 10 lỗ, một số board 9 hoặc 11 lỗ – thử trước khi hàn).</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Một mối hàn đúng (≈ 3 giây)</h3>
+        <ol>
+          <li>Lau mũi trên bọt biển, tráng một chút thiếc cho mũi bóng.</li>
+          <li>Đặt mũi hàn <b>chạm cùng lúc pad đồng và chân linh kiện</b>, giữ 1–2 giây cho nóng.</li>
+          <li>Đưa thiếc vào <b>chỗ chân chạm pad</b> (không đưa vào đầu mũi), thiếc chảy bao quanh chân.</li>
+          <li>Rút thiếc ra trước, rồi rút mỏ hàn. Không thổi, không lay mạch trong 2 giây.</li>
+        </ol>
+        <ul>
+          <li><b>Mối đẹp:</b> hình nón nhỏ, bóng, ôm kín pad. <b>Mối xấu:</b> tròn như hạt (thiếc không bám pad), xỉn sần (hàn nguội) → chấm nhựa thông, hàn lại.</li>
+          <li>Không giữ mỏ quá 5 giây một chỗ – pad đồng sẽ bong.</li>
+          <li>Thừa thiếc dính sang chân bên cạnh (chập) → dùng dây hút thiếc đặt lên, áp mỏ hàn để hút đi.</li>
+          <li>Hàn xong cắt chân thừa sát mối hàn (giữ lại vài mẩu để làm cầu thiếc).</li>
+        </ul>
+        <h3>Làm bus và dây nối</h3>
+        <ul>
+          <li><b>Bus</b> (đường thẳng to trên hình): lột dây đồng trần, nắn thẳng, đặt dọc theo hàng lỗ <b>ở mặt dưới</b>, hàn dính vào pad cứ 3–4 lỗ một mối.</li>
+          <li><b>Dây có vỏ</b>: lột 3 mm mỗi đầu, luồn từ mặt trên xuống <b>lỗ ngay cạnh</b> chân cần nối, ở mặt dưới bẻ đầu dây áp vào chân đó rồi hàn chung.</li>
+          <li>Dây có vỏ được phép bắt chéo qua bus/dây khác. <b>Dây trần thì không</b> – 2 dây trần chạm nhau là chập.</li>
+          <li>Đi dây dưới thân ESP32 được (ESP32 cắm trên hàng rào cái cao ~8 mm).</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Thứ tự lắp (thấp trước, cao sau)</h3>
+    <ol>
+      <li>Đánh dấu vị trí từng linh kiện theo hình bằng bút lông (cắm thử, chưa hàn).</li>
+      <li>Bus trần ở mặt dưới: 5V, GND (trái), 3V3, GND, SDA, SCL (phải), 5V tải (ngang).</li>
+      <li>Điện trở R1, LED (chân dài = A), nút S1.</li>
+      <li>Hàng rào đực J1, J2, J3, H1, H2.</li>
+      <li>Hàng rào cái cho ESP32, INA219, BH1750, DHT22 (mẹo cắm module rồi mới hàn).</li>
+      <li>Tụ C1: <b>vạch trắng/sọc "−" là chân âm</b> → vào bus GND. Cắm ngược tụ hoá có thể phồng/nổ.</li>
+      <li>Dây có vỏ theo bảng mục 9, xong dây nào ✓ dây đó.</li>
+      <li>Dán relay, nối Dupont, vặn dây tải vào cầu vít.</li>
+    </ol>
+
+    <h3>Kiểm tra trước khi cấp điện (chưa cắm ESP32 và module)</h3>
+    <ul>
+      <li>VOM chế độ thông mạch: <b>5V – GND</b>, <b>3V3 – GND</b>, <b>5V – 3V3</b>, <b>SDA – SCL</b> đều <b>KHÔNG được kêu</b>. Kêu → có chỗ chập, tìm và sửa trước.</li>
+      <li>Đo từng dây trong bảng mục 9: 2 đầu phải kêu.</li>
+      <li>Soi mặt dưới dưới đèn sáng, tìm thiếc dính giữa 2 chân kề nhau.</li>
+    </ul>
+    <h3>Cấp điện lần đầu</h3>
+    <ol>
+      <li>Chỉ cắm ESP32, cắm USB. Đo VIN – GND ≈ 5 V, 3V3 – GND ≈ 3,3 V. Nạp env <code>t00_esp32</code> kiểm tra.</li>
+      <li>Cắm từng module rồi chạy bài test tương ứng: <code>t05_bh1750</code>, <code>t06_lcd</code>, <code>t02_dht22</code>, <code>t04_pir</code>, <code>t03_buttons</code>, <code>t09_relay_led</code>, <code>t08_relay_fan</code>, <code>t07_ina219</code>.</li>
+      <li>Thấy nóng bất thường hoặc mùi khét → <b>rút điện ngay</b>, kiểm tra lại chỗ vừa lắp.</li>
+    </ol>
+    <div class="danger"><b>An toàn:</b> hàn ở chỗ thoáng (khói nhựa thông), luôn gác mỏ lên giá, không hàn khi mạch đang cắm điện, rửa tay sau khi hàn (thiếc có chì).</div>
+  </div>
 </div>
 
 <script>
@@ -548,5 +660,225 @@ tbody.addEventListener('mouseover', (e) => {
 })
 tbody.addEventListener('mouseout', () => highlight(null))
 </script>
+<style>
+  h3 { margin: 14px 0 6px; font-size: 15.5px; }
+  ol { margin: 6px 0; padding-left: 22px; }
+  .pcb { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: #fcfcfe; margin: 8px 0; }
+  .pcb svg { display: block; min-width: 900px; width: 100%; height: auto; }
+  .pcb-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); }
+  .pcb-legend i { display: inline-block; width: 22px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .pcb .w { stroke-width: 2.2; opacity: .9; transition: opacity .15s, stroke-width .15s; }
+  .pcb.hovering .w { opacity: .12; }
+  .pcb.hovering .w.on { opacity: 1; stroke-width: 4; }
+  #pcb-table tbody tr { cursor: default; }
+  #pcb-table tbody tr:hover td { background: #f6f5ff; }
+  #pcb-table input { width: 16px; height: 16px; }
+</style>
+
+<script>
+(() => {
+  /* ---------- Dữ liệu mạch xanh (toạ độ lỗ: [cột, hàng], tính từ 1) ---------- */
+  const COLS = 58, ROWS = 38
+  const K = { v5: C.v5, v33: C.v33, gnd: C.gnd, sda: C.sda, scl: C.scl, sig: C.sig, btn: C.btn, load: C.load, motor: C.motor, dup: '#94a3b8' }
+
+  // Bus dây đồng trần ở mặt dưới
+  const BUSES = [
+    { name: '5V', c: K.v5, a: [21, 3], b: [21, 35] },
+    { name: 'GND', c: K.gnd, a: [22, 3], b: [22, 35] },
+    { name: '3V3', c: K.v33, a: [38, 2], b: [38, 34] },
+    { name: 'GND', c: K.gnd, a: [39, 2], b: [39, 35] },
+    { name: 'SDA', c: K.sda, a: [40, 2], b: [40, 34] },
+    { name: 'SCL', c: K.scl, a: [41, 2], b: [41, 34] },
+    { name: '5V tải', c: K.load, a: [2, 24], b: [14, 24] },
+  ]
+
+  // Linh kiện: box = [cột1, hàng1, cột2, hàng2]; pins = [tên, cột, hàng, phía nhãn l/r/t/b, kiểu]
+  const col = (x, y1, names, side) => names.map((n, i) => [n, x, y1 + i, side])
+  const row = (y, x1, names, side) => names.map((n, i) => [n, x1 + i, y, side])
+  const PARTS = [
+    { id: 'esp', title: 'ESP32', sub: ['2 hàng rào cái 15 chân', 'cổng USB ↓ mép dưới'], box: [24, 16, 36, 37], tx: 30, ty: 16.9, style: 'above',
+      pins: [...col(25, 19, ['EN', 'VP', 'VN', 'D34', 'D35', 'D32', 'D33', 'D25', 'D26', 'D27', 'D14', 'D12', 'D13', 'GND', 'VIN'], 'r'),
+             ...col(35, 19, ['D23', 'D22', 'TX0', 'RX0', 'D21', 'D19', 'D18', 'D5', 'TX2', 'RX2', 'D4', 'D2', 'D15', 'GND', '3V3'], 'l')] },
+    { id: 'rl1', title: 'Relay 1 – Quạt', sub: ['dán băng keo 2 mặt', 'jumper ở H'], box: [2, 2, 17, 11], tx: 10, ty: 4.6, style: 'off',
+      pins: [...col(3, 4, ['NO', 'COM', 'NC'], 'r').map((p, i) => [p[0], 3, 4 + i * 2, 'r', 'screw']), ...col(17, 5, ['VCC', 'GND', 'IN'], 'l')] },
+    { id: 'rl2', title: 'Relay 2 – Đèn', sub: ['dán băng keo 2 mặt', 'jumper ở H'], box: [2, 13, 17, 22], tx: 10, ty: 15.6, style: 'off',
+      pins: [...col(3, 15, ['NO', 'COM', 'NC'], 'r').map((p, i) => [p[0], 3, 15 + i * 2, 'r', 'screw']), ...col(17, 16, ['VCC', 'GND', 'IN'], 'l')] },
+    { id: 'h1', title: 'H1', box: null, tx: 20, ty: 3.9, pins: col(20, 5, ['VCC', 'GND', 'IN'], 'n') },
+    { id: 'h2', title: 'H2', box: null, tx: 20, ty: 14.9, pins: col(20, 16, ['VCC', 'GND', 'IN'], 'n') },
+    { id: 'ina', title: 'INA219', sub: ['hàng rào cái 6 chân'], box: [2, 26, 11, 34], tx: 6.5, ty: 27.6,
+      pins: row(34, 3, ['VCC', 'GND', 'SCL', 'SDA', 'VIN−', 'VIN+'], 't') },
+    { id: 'r1', title: 'R1 330Ω', box: null, tx: 15, ty: 26.1, pins: [['1', 13, 27, 'n'], ['2', 17, 27, 'n']], resistor: true },
+    { id: 'led', title: 'LED', box: null, tx: 17.5, ty: 31.4, pins: [['A', 17, 30, 'n'], ['K', 18, 30, 'n']], led: true },
+    { id: 'j1', title: 'J1 Quạt', box: null, tx: 13.5, ty: 33.4, pins: [['+', 13, 32, 't'], ['−', 14, 32, 't']] },
+    { id: 'c1', title: 'C1 470µF', box: null, tx: 19.9, ty: 2.25, anchor: 'end', pins: [['+', 21, 2, 'n'], ['−', 22, 2, 'n']], cap: true },
+    { id: 'j2', title: 'J2 → PIR', box: null, tx: 27, ty: 2.6, pins: row(4, 26, ['VCC', 'OUT', 'GND'], 'b') },
+    { id: 'j3', title: 'J3 → LCD', box: null, tx: 27.5, ty: 6.6, pins: row(8, 26, ['GND', 'VCC', 'SDA', 'SCL'], 'b') },
+    { id: 's1', title: 'S1 nút SET', box: [31, 11, 36, 13], tx: 33.5, ty: 9.9, style: 'btn',
+      pins: [['1', 31, 11, 'n'], ['2', 36, 11, 'n'], ['3', 31, 13, 'n'], ['4', 36, 13, 'n']] },
+    { id: 'bh', title: 'BH1750', sub: ['ngửa lên đón sáng'], box: [43, 2, 50, 8], tx: 47.3, ty: 4.4,
+      pins: col(43, 3, ['VCC', 'GND', 'SCL', 'SDA', 'ADDR'], 'r') },
+    { id: 'dht', title: 'DHT22', sub: ['chìa ra ngoài mép'], box: [55, 13, 62, 19], tx: 59.3, ty: 14.4,
+      pins: col(55, 15, ['+', 'OUT', '−'], 'r') },
+    { id: 'free', title: 'Chỗ trống', sub: ['chuyển mức I2C', 'cho LCD (tuỳ chọn)'], box: [44, 22, 52, 27], tx: 48, ty: 23.9, style: 'free', pins: [] },
+  ]
+
+  // Mối nối: [nhóm, từ, [c,h], tới, [c,h], màu, ghi chú, kiểu ('dup' Dupont, 'vit' vặn vít; bỏ trống = tự tính)]
+  const B5 = 'Bus 5V', BG = 'Bus GND trái', B3 = 'Bus 3V3', BR = 'Bus GND phải', BSDA = 'Bus SDA', BSCL = 'Bus SCL', BL = 'Ray 5V tải'
+  const LINKS = [
+    ['Nguồn', 'ESP32 VIN', [25, 33], B5, [21, 33], K.v5, 'Nguồn 5V từ cổng USB'],
+    ['Nguồn', 'ESP32 GND (trái)', [25, 32], BG, [22, 32], K.gnd],
+    ['Nguồn', 'ESP32 3V3', [35, 33], B3, [38, 33], K.v33],
+    ['Nguồn', 'ESP32 GND (phải)', [35, 32], BR, [39, 32], K.gnd],
+    ['Nguồn', BG, [22, 35], BR, [39, 35], K.gnd, 'Nối 2 bus GND với nhau (đi dưới đuôi ESP32)'],
+    ['Nguồn', 'C1 +', [21, 2], B5, [21, 3], K.v5, 'Tụ lọc nguồn, đặt ở đầu bus'],
+    ['Nguồn', 'C1 −', [22, 2], BG, [22, 3], K.gnd, 'Vạch trắng = chân âm'],
+    ['I2C', 'ESP32 D21', [35, 23], BSDA, [40, 23], K.sda, 'SDA'],
+    ['I2C', 'ESP32 D22', [35, 20], BSCL, [41, 20], K.scl, 'SCL'],
+    ['Relay 1 – Quạt', 'Relay 1 VCC/GND/IN', [17, 5], 'H1', [20, 5], K.dup, '3 sợi Dupont cái-cái, giữ đúng thứ tự', 'dup'],
+    ['Relay 1 – Quạt', 'H1 VCC', [20, 5], B5, [21, 5], K.v5],
+    ['Relay 1 – Quạt', 'H1 GND', [20, 6], BG, [22, 6], K.gnd, 'Vắt qua bus 5V'],
+    ['Relay 1 – Quạt', 'H1 IN', [20, 7], 'ESP32 D26', [25, 27], K.sig, 'HIGH = quạt chạy'],
+    ['Relay 1 – Quạt', 'Relay 1 COM', [3, 6], BL, [3, 24], K.load, '', 'vit'],
+    ['Relay 1 – Quạt', 'Relay 1 NO', [3, 4], 'J1 +', [13, 32], K.motor, 'Quạt dây đỏ cắm J1+, dây đen J1−', 'vit'],
+    ['Relay 1 – Quạt', 'J1 −', [14, 32], BG, [22, 31], K.gnd],
+    ['Relay 2 – Đèn', 'Relay 2 VCC/GND/IN', [17, 16], 'H2', [20, 16], K.dup, '3 sợi Dupont cái-cái', 'dup'],
+    ['Relay 2 – Đèn', 'H2 VCC', [20, 16], B5, [21, 16], K.v5],
+    ['Relay 2 – Đèn', 'H2 GND', [20, 17], BG, [22, 17], K.gnd, 'Vắt qua bus 5V'],
+    ['Relay 2 – Đèn', 'H2 IN', [20, 18], 'ESP32 D25', [25, 26], K.sig, 'HIGH = đèn sáng'],
+    ['Relay 2 – Đèn', 'Relay 2 COM', [3, 17], BL, [5, 24], K.load, '', 'vit'],
+    ['Relay 2 – Đèn', 'Relay 2 NO', [3, 15], 'R1 chân 1', [13, 27], K.load, '', 'vit'],
+    ['Relay 2 – Đèn', 'R1 chân 2', [17, 27], 'LED A (chân dài)', [17, 30], K.load],
+    ['Relay 2 – Đèn', 'LED K (chân ngắn)', [18, 30], BG, [22, 30], K.gnd],
+    ['INA219', 'INA219 VIN+', [8, 34], B5, [21, 34], K.v5, 'Dòng vào – dùng dây to hơn chút'],
+    ['INA219', 'INA219 VIN−', [7, 34], BL, [7, 24], K.load, 'Dòng ra → quạt + đèn. Chưa có INA219: cắm 1 dây nối VIN+ ↔ VIN−'],
+    ['INA219', 'INA219 VCC', [3, 34], B3, [38, 34], K.v33, 'Đi dưới thân ESP32', '', [[3, 38], [38, 38]]],
+    ['INA219', 'INA219 GND', [4, 34], BG, [22, 35], K.gnd, '', '', [[4, 35]]],
+    ['INA219', 'INA219 SCL', [5, 34], BSCL, [41, 34], K.scl, '', '', [[5, 37], [41, 37]]],
+    ['INA219', 'INA219 SDA', [6, 34], BSDA, [40, 34], K.sda, '', '', [[6, 36], [40, 36]]],
+    ['PIR · LCD · nút', 'J2 VCC', [26, 4], B5, [21, 5], K.v5, 'PIR cần 5V'],
+    ['PIR · LCD · nút', 'J2 OUT', [27, 4], 'ESP32 D27', [25, 28], K.sig, 'Đi dưới thân ESP32'],
+    ['PIR · LCD · nút', 'J2 GND', [28, 4], BG, [22, 4], K.gnd],
+    ['PIR · LCD · nút', 'J3 GND', [26, 8], BG, [22, 8], K.gnd],
+    ['PIR · LCD · nút', 'J3 VCC', [27, 8], B5, [21, 9], K.v5, 'LCD chạy 5V'],
+    ['PIR · LCD · nút', 'J3 SDA', [28, 8], BSDA, [40, 8], K.sda],
+    ['PIR · LCD · nút', 'J3 SCL', [29, 8], BSCL, [41, 9], K.scl],
+    ['PIR · LCD · nút', 'S1 chân 1', [31, 11], 'ESP32 D32', [25, 24], K.btn, 'Nhấn = LOW (INPUT_PULLUP)'],
+    ['PIR · LCD · nút', 'S1 chân 3', [31, 13], BG, [22, 13], K.gnd, 'Chân 1 và 3 cách nhau 5 mm'],
+    ['Cảm biến phải', 'BH1750 VCC', [43, 3], B3, [38, 3], K.v33],
+    ['Cảm biến phải', 'BH1750 GND', [43, 4], BR, [39, 4], K.gnd],
+    ['Cảm biến phải', 'BH1750 SCL', [43, 5], BSCL, [41, 5], K.scl],
+    ['Cảm biến phải', 'BH1750 SDA', [43, 6], BSDA, [40, 6], K.sda],
+    ['Cảm biến phải', 'BH1750 ADDR', [43, 7], BR, [39, 7], K.gnd, 'Địa chỉ 0x23'],
+    ['Cảm biến phải', 'DHT22 +', [55, 15], B3, [38, 15], K.v33],
+    ['Cảm biến phải', 'DHT22 OUT', [55, 16], 'ESP32 D4', [35, 29], K.sig],
+    ['Cảm biến phải', 'DHT22 −', [55, 17], BR, [39, 17], K.gnd],
+  ]
+
+  /* ---------- Vẽ ---------- */
+  const P = 15, ML = 34, MT = 46, EXTRA = 5
+  const X = (c) => ML + (c - 0.5) * P, Y = (r) => MT + (r - 0.5) * P
+  const SW = ML + (COLS + EXTRA) * P + 10, SH = MT + ROWS * P + 22
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+  const t = (x, y, s, o = {}) => `<text x="${x}" y="${y}" font-size="${o.fs || 10}" fill="${o.fill || '#1e2235'}" text-anchor="${o.a || 'start'}" ${o.w ? 'font-weight="700"' : ''} ${o.rot ? `transform="rotate(${o.rot} ${x} ${y})"` : ''}>${esc(s)}</text>`
+  let s = `<svg viewBox="0 0 ${SW} ${SH}" xmlns="http://www.w3.org/2000/svg">`
+
+  // Mạch + lỗ + số cột/hàng
+  s += `<rect x="${ML}" y="${MT}" width="${COLS * P}" height="${ROWS * P}" rx="6" fill="#1f6f47"/>`
+  for (let c = 1; c <= COLS; c++) for (let r = 1; r <= ROWS; r++) s += `<circle cx="${X(c)}" cy="${Y(r)}" r="2.6" fill="#d9b867" opacity=".55"/>`
+  for (let c = 5; c <= COLS; c += 5) s += t(X(c), SH - 6, c, { a: 'middle', fill: '#6b7190' })
+  for (let r = 5; r <= ROWS; r += 5) s += t(ML - 6, Y(r) + 3, r, { a: 'end', fill: '#6b7190' })
+  s += t(ML + COLS * P, SH - 6, 'cột →', { a: 'end', fill: '#6b7190' }) + t(4, MT - 4, 'hàng ↓', { fill: '#6b7190' })
+
+  // Bus
+  for (const b of BUSES) {
+    s += `<line x1="${X(b.a[0])}" y1="${Y(b.a[1])}" x2="${X(b.b[0])}" y2="${Y(b.b[1])}" stroke="${b.c}" stroke-width="6" stroke-linecap="round" opacity=".85"/>`
+    if (b.a[0] === b.b[0]) s += t(X(b.a[0]) + 3, MT - 4, b.name, { rot: -90, fs: 10, fill: b.c === K.gnd ? '#111827' : b.c, w: 1 })
+    else s += t(X(b.b[0]) + 8, Y(b.a[1]) + 4, b.name, { fill: '#fff', w: 1 })
+  }
+
+  // Thân linh kiện
+  for (const p of PARTS) {
+    if (p.box) {
+      const [c1, r1, c2, r2] = p.box
+      const st = { above: 'fill="rgba(30,34,53,.10)" stroke="#1e2235" stroke-dasharray="6 4"', off: 'fill="rgba(255,255,255,.82)" stroke="#1e2235" stroke-dasharray="5 3"', btn: 'fill="#cbd5e1" stroke="#1e2235"', free: 'fill="rgba(255,255,255,.18)" stroke="#fff" stroke-dasharray="3 3"' }[p.style] || 'fill="rgba(255,255,255,.9)" stroke="#1e2235"'
+      s += `<rect x="${X(c1) - P / 2 + 1}" y="${Y(r1) - P / 2 + 1}" width="${(c2 - c1 + 1) * P - 2}" height="${(r2 - r1 + 1) * P - 2}" rx="5" ${st} stroke-width="1.5"/>`
+    }
+    if (p.resistor) s += `<rect x="${X(13) + 7}" y="${Y(27) - 4}" width="${X(17) - X(13) - 14}" height="8" rx="3" fill="#e9d5a1" stroke="#1e2235"/><line x1="${X(13)}" y1="${Y(27)}" x2="${X(13) + 7}" y2="${Y(27)}" stroke="#9ca3af" stroke-width="2"/><line x1="${X(17) - 7}" y1="${Y(27)}" x2="${X(17)}" y2="${Y(27)}" stroke="#9ca3af" stroke-width="2"/>`
+    if (p.led) s += `<circle cx="${(X(17) + X(18)) / 2}" cy="${Y(30)}" r="9" fill="#fecaca" stroke="#ef4444" stroke-width="2"/>`
+    if (p.cap) s += `<circle cx="${(X(21) + X(22)) / 2}" cy="${Y(2)}" r="10" fill="#1e3a8a" stroke="#93c5fd"/><rect x="${X(22) - 2}" y="${Y(2) - 9}" width="4" height="18" fill="#e5e7eb"/>`
+  }
+
+  // Dây
+  LINKS.forEach((l, i) => {
+    const [, , a, , b, color, , kind, via = []] = l
+    const pts = [a, ...via, b].map(([c, r]) => `${X(c)},${Y(r)}`).join(' ')
+    s += `<polyline class="w" data-i="${i}" points="${pts}" fill="none" stroke="${color}" ${kind === 'dup' ? 'stroke-dasharray="5 4" stroke-width="4"' : ''} stroke-linecap="round" stroke-linejoin="round"/>`
+  })
+
+  // Chân + nhãn
+  for (const p of PARTS) {
+    for (const [name, c, r, side, kind] of p.pins) {
+      const x = X(c), y = Y(r)
+      s += kind === 'screw'
+        ? `<rect x="${x - 6}" y="${y - 6}" width="12" height="12" rx="2" fill="#2563eb" stroke="#fff" stroke-width="1.2"/>`
+        : `<circle cx="${x}" cy="${y}" r="4.6" fill="#1e2235" stroke="#f5d78a" stroke-width="1.6"/>`
+      const lab = { r: [x + 8, y + 3.5, 'start'], l: [x - 8, y + 3.5, 'end'], t: [x + 3, y - 8, 'start', -90], b: [x - 3, y + 8, 'end', -90] }[side]
+      if (lab) s += t(lab[0], lab[1], name, { fs: 9, a: lab[2], rot: lab[3], fill: p.box && !['free', 'btn', 'above'].includes(p.style) ? '#1e2235' : '#fff' })
+    }
+    const onBoard = p.box && p.style !== 'free' && p.style !== 'above'
+    const fill = onBoard ? '#1e2235' : '#fff'
+    s += t(X(p.tx) - (p.anchor === 'end' ? 0 : 0), Y(p.ty), p.title, { fs: p.box ? 12.5 : 10.5, w: 1, a: p.anchor || 'middle', fill: p.style === 'above' ? '#fff' : fill })
+    ;(p.sub || []).forEach((line, k) => (s += t(X(p.tx), Y(p.ty) + 13 + k * 12, line, { fs: 9.5, a: 'middle', fill: p.style === 'above' ? '#e5e7eb' : onBoard ? '#6b7190' : '#e5e7eb' })))
+  }
+  s += '</svg>'
+  const pcb = document.getElementById('pcb')
+  pcb.innerHTML = s
+
+  // Chú thích
+  document.getElementById('pcb-legend').innerHTML = [
+    [K.v5, '5V'], [K.v33, '3,3V'], [K.load, '5V tải'], [K.gnd, 'GND'], [K.sda, 'SDA'], [K.scl, 'SCL'], [K.sig, 'Tín hiệu'], [K.btn, 'Nút'], [K.motor, 'Quạt'], [K.dup, 'Dupont (nét đứt)'],
+  ].map(([c, n]) => `<span><i style="background:${c}"></i>${n}</span>`).join('') +
+    '<span>■ xanh dương = cầu đấu vít trên relay</span><span>Bus = đường to · dây = đường mảnh</span>'
+
+  // Bảng
+  const pos = ([c, r]) => `C${c}·H${r}`
+  const how = (l) => {
+    if (l[7] === 'dup') return 'Dây Dupont cái-cái'
+    if (l[7] === 'vit') return 'Dây điện vặn vít'
+    return Math.abs(l[2][0] - l[4][0]) + Math.abs(l[2][1] - l[4][1]) === 1 ? 'Cầu thiếc' : 'Dây có vỏ'
+  }
+  let html = '', group = ''
+  LINKS.forEach((l, i) => {
+    if (l[0] !== group) { group = l[0]; html += `<tr class="group"><td colspan="6">${esc(group)}</td></tr>` }
+    html += `<tr data-i="${i}"><td>${i + 1}</td><td><span class="dot" style="background:${l[5]}"></span>${esc(l[1])} <code>${pos(l[2])}</code></td><td>${esc(l[3])} <code>${pos(l[4])}</code></td><td>${how(l)}</td><td>${esc(l[6] || '')}</td><td><input type="checkbox" aria-label="Đã hàn dây ${i + 1}"></td></tr>`
+  })
+  const tb = document.querySelector('#pcb-table tbody')
+  tb.innerHTML = html
+
+  // Đánh dấu ✓ lưu trong trình duyệt
+  const KEY = 'pcb-phong-khach'
+  let done = []
+  try { done = JSON.parse(localStorage.getItem(KEY) || '[]') } catch {}
+  tb.querySelectorAll('tr[data-i] input').forEach((cb) => {
+    const i = +cb.closest('tr').dataset.i
+    cb.checked = done.includes(i)
+    cb.addEventListener('change', () => {
+      done = cb.checked ? [...done, i] : done.filter((x) => x !== i)
+      try { localStorage.setItem(KEY, JSON.stringify(done)) } catch {}
+    })
+  })
+
+  // Rê chuột vào hàng → làm nổi dây
+  const hl = (i) => {
+    pcb.classList.toggle('hovering', i != null)
+    pcb.querySelectorAll('.w').forEach((w) => w.classList.toggle('on', w.dataset.i === String(i)))
+  }
+  tb.addEventListener('mouseover', (e) => { const tr = e.target.closest('tr[data-i]'); hl(tr ? tr.dataset.i : null) })
+  tb.addEventListener('mouseout', () => hl(null))
+  pcb.addEventListener('mouseover', (e) => e.target.classList.contains('w') && hl(e.target.dataset.i))
+  pcb.addEventListener('mouseout', () => hl(null))
+})()
+</script>
+
 </body>
 </html>

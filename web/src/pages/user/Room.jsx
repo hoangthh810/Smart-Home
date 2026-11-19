@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
-import { Bot, Droplets, FlaskConical, Flame, Gauge, Sun, Thermometer, UserCheck, UserX } from 'lucide-react'
+import { Bot, Droplets, FlaskConical, Flame, Thermometer, UserCheck, UserX } from 'lucide-react'
 import { useCurrentHome } from '../../store/auth'
 import { useHomeSettings } from '../../store/db'
 import { useLive } from '../../store/live'
@@ -35,7 +35,7 @@ export default function Room() {
         actions={<ModeSwitch roomId={roomId} />}
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
+      <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${isLiving ? 'lg:grid-cols-3' : 'lg:grid-cols-4'}`}>
         <StatCard
           icon={Thermometer}
           label="Nhiệt độ"
@@ -52,9 +52,7 @@ export default function Room() {
           warn={s.humidity > settings.humidityHigh}
           hint={s.humidity > settings.humidityHigh ? `Cao hơn ngưỡng ${settings.humidityHigh} %` : 'DHT22'}
         />
-        {isLiving ? (
-          <StatCard icon={Sun} label="Ánh sáng" value={`${fmtNumber(s.lux)} lux`} tone="amber" hint={s.lux < settings.luxLow ? 'Trời tối' : 'BH1750'} />
-        ) : (
+        {!isLiving && (
           <StatCard
             icon={Flame}
             label="Khí gas"
@@ -71,7 +69,6 @@ export default function Room() {
           tone={s.presence ? 'green' : 'slate'}
           hint="PIR"
         />
-        <StatCard icon={Gauge} label="Công suất" value={`${fmtNumber(s.power, 1)} W`} tone="violet" hint="INA219" />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -99,14 +96,16 @@ export default function Room() {
               ]}
             />
           </div>
-          <div className="card">
-            <h2 className="mb-4 font-semibold">{isLiving ? 'Cường độ ánh sáng' : 'Nồng độ khí gas'} (thời gian thực)</h2>
-            <SensorChart
-              data={history}
-              lines={[isLiving ? { key: 'lux', name: 'Ánh sáng', color: '#f59e0b', unit: 'lux' } : { key: 'gas', name: 'Chỉ số gas', color: '#f97316', unit: '' }]}
-              refLine={isLiving ? { value: settings.luxLow, label: 'Ngưỡng tối' } : { value: settings.gasThreshold, label: 'Ngưỡng cảnh báo' }}
-            />
-          </div>
+          {!isLiving && (
+            <div className="card">
+              <h2 className="mb-4 font-semibold">Nồng độ khí gas (thời gian thực)</h2>
+              <SensorChart
+                data={history}
+                lines={[{ key: 'gas', name: 'Chỉ số gas', color: '#f97316', unit: '' }]}
+                refLine={{ value: settings.gasThreshold, label: 'Ngưỡng cảnh báo' }}
+              />
+            </div>
+          )}
         </div>
       </div>
 

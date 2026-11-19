@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
-  AlertTriangle, BarChart3, Bell, ChefHat, History, LayoutDashboard, LogOut, Menu, Moon, ReceiptText,
-  Settings, Sofa, Sun, User, Users, X, Zap,
+  AlertTriangle, BarChart3, Bell, ChefHat, History, LayoutDashboard, LogOut, Menu, Moon,
+  Settings, Sofa, Sun, User, Users, X,
 } from 'lucide-react'
 import { useAuth, useCurrentHome, useCurrentUser } from '../store/auth'
 import { useDb } from '../store/db'
@@ -18,7 +18,6 @@ const USER_NAV = [
   { to: '/nha', label: 'Tổng quan', icon: LayoutDashboard, end: true },
   { to: '/nha/phong/living', label: 'Phòng khách', icon: Sofa },
   { to: '/nha/phong/kitchen', label: 'Phòng bếp', icon: ChefHat },
-  { to: '/nha/dien-nang', label: 'Điện năng', icon: Zap },
   { to: '/nha/lich-su', label: 'Lịch sử', icon: History },
   { to: '/nha/cai-dat', label: 'Cài đặt nhà', icon: Settings },
   { to: '/nha/tai-khoan', label: 'Tài khoản', icon: User },
@@ -28,7 +27,6 @@ const ADMIN_NAV = [
   { to: '/admin', label: 'Tổng quan', icon: BarChart3, end: true },
   { to: '/admin/nguoi-dung', label: 'Nhà & tài khoản', icon: Users },
   { to: '/admin/canh-bao', label: 'Cảnh báo', icon: Bell, badge: 'unack' },
-  { to: '/admin/bang-gia', label: 'Bảng giá EVN', icon: ReceiptText },
   { to: '/admin/tai-khoan', label: 'Tài khoản', icon: User },
 ]
 

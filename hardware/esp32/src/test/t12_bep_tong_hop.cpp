@@ -1,4 +1,4 @@
-// Bước 12: Kiểm tra tổng hợp node phòng bếp (trừ INA219) – chân giống node_phong_bep.cpp
+// Bước 12: Kiểm tra tổng hợp node phòng bếp (trừ INA219) – chân giống src/node/node.cpp (env node_phong_bep)
 // Khởi động: quét I2C, kêu buzzer 1 tiếng, bật lần lượt đèn rồi quạt 1 giây
 // Sau đó mỗi giây in DHT22 / MQ-2 / PIR / nút lên Serial và LCD
 // Bấm SET (D32) = tăng ID node 1 → 10 rồi quay về 1 (hiện trên LCD), mỗi lần bấm buzzer kêu "bíp"

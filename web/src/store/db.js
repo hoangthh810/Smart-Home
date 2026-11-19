@@ -1,4 +1,4 @@
-// Phần dữ liệu còn giả lập, lưu trong localStorage: cài đặt nhà, cảnh báo, nhật ký, bảng giá EVN.
+// Phần dữ liệu còn giả lập, lưu trong localStorage: cài đặt nhà, cảnh báo, nhật ký.
 // Nhà và tài khoản đã chuyển lên Firebase (store/auth.js); phần này sẽ chuyển dần sang Firestore.
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
@@ -18,11 +18,6 @@ export const useDb = create(
       // ---------- Cài đặt nhà ----------
       updateSettings(homeId, patch) {
         set((s) => ({ settings: { ...s.settings, [homeId]: { ...DEFAULT_HOME_SETTINGS, ...s.settings[homeId], ...patch } } }))
-      },
-
-      // ---------- Bảng giá EVN ----------
-      setEvn(evn) {
-        set({ evn })
       },
 
       // ---------- Cảnh báo ----------

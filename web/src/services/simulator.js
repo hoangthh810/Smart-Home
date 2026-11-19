@@ -3,8 +3,6 @@
 import { CONTROLLABLE_DEVICES, DEVICE_LABELS } from '../data/constants'
 
 const TICK_MS = 2000
-// Công suất danh định giả lập (W) – thay bằng số đo thật từ INA219
-const DEVICE_WATTS = { light: 3, fan: 6, buzzer: 0.4 }
 
 const rand = (a, b) => a + Math.random() * (b - a)
 const drift = (value, target, rate, noise) => value + (target - value) * rate + rand(-noise, noise)
@@ -17,7 +15,7 @@ export function createSimulator({ getSettings, emit }) {
       nodeId: 1, // ID cài bằng nút trên node, hiện trên LCD
       mode: 'auto',
       devices: { light: false, fan: false },
-      sensors: { temperature: 29.5, humidity: 68, lux: 250, presence: false, power: 0 },
+      sensors: { temperature: 29.5, humidity: 68, presence: false },
       lastSeenAt: now,
       presenceOverride: null,
     },
@@ -25,7 +23,7 @@ export function createSimulator({ getSettings, emit }) {
       nodeId: 2,
       mode: 'auto',
       devices: { light: false, fan: false, buzzer: false },
-      sensors: { temperature: 31, humidity: 72, gas: 30, presence: false, power: 0 },
+      sensors: { temperature: 31, humidity: 72, gas: 30, presence: false },
       lastSeenAt: now,
       presenceOverride: null,
       gasLeak: false,
@@ -94,16 +92,6 @@ export function createSimulator({ getSettings, emit }) {
           setDevice(roomId, 'fan', false, 'Tự động (Auto)')
         }
       }
-
-      // Ánh sáng (chỉ phòng khách) – có cộng thêm ánh sáng đèn
-      if (roomId === 'living') {
-        const target = daylight * 600 + 5 + (r.devices.light ? 120 : 0)
-        s.lux = Math.max(0, Math.round(drift(s.lux, target, 0.2, 4)))
-      }
-
-      // INA219: tổng công suất các tải trong phòng
-      const watts = Object.entries(r.devices).reduce((sum, [d, on]) => sum + (on ? DEVICE_WATTS[d] : 0), 0)
-      s.power = watts > 0 ? round1(watts + rand(-0.2, 0.2)) : round1(rand(0, 0.05))
 
       emit(roomId, 'sensors', { ...s })
       publishState(roomId)

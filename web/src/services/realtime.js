@@ -1,7 +1,7 @@
 // Lớp kết nối thời gian thực giữa Web và hệ thống (theo mô hình MQTT).
 //
 // Cấu trúc topic dự kiến (dùng chung cho ESP32, Raspberry Pi và Web):
-//   smarthome/{homeId}/{room}/sensors   ESP32 -> Web   {temperature, humidity, lux|gas, presence, power}
+//   smarthome/{homeId}/{room}/sensors   ESP32 -> Web   {temperature, humidity, gas?, presence}
 //   smarthome/{homeId}/{room}/state     ESP32 -> Web   {nodeId, mode, devices: {light, fan, buzzer}, alarm}
 //                                                      nodeId: ID (1–10) cài bằng nút SET trên node, hiện trên LCD
 //   smarthome/{homeId}/{room}/cmd       Web -> Pi/ESP32 {mode} | {device, value}

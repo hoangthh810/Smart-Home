@@ -1,7 +1,8 @@
-// Firmware node phòng bếp – WiFi + MQTT tới Raspberry Pi (bảng topic trong CLAUDE.md)
+// Firmware node (dùng chung 2 phòng) – WiFi + MQTT tới Raspberry Pi (bảng topic trong CLAUDE.md)
+//   Env node_phong_bep (-D NODE_KITCHEN): thêm MQ-2 + còi · env node_phong_khach: chỉ DHT22, PIR, đèn, quạt
 //   Gửi sensors mỗi 2 giây, state khi thay đổi (retained) · nhận cmd (web) và config (cài đặt nhà)
 //   Auto (PIR) và cảnh báo gas chạy ngay trên node → mất WiFi/Pi vẫn bật còi, giữ nguyên đèn/quạt
-//   Chân: xem hardware/so-do-node-phong-bep.html
+//   Chân: xem hardware/so-do-node-phong-bep.html, so-do-node-phong-khach.html (2 phòng cùng chân)
 //   WiFi, ID nhà, Pi: giữ nút SET 5 giây → cài qua trình duyệt trên máy tính/điện thoại (portal.h); include/secrets.h chỉ là giá trị mặc định
 #include <Arduino.h>
 #include <WiFi.h>
@@ -11,7 +12,6 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <DHT.h>
-#include <Adafruit_INA219.h>
 #include <Preferences.h>
 #include <driver/gpio.h>
 
@@ -35,15 +35,23 @@
 #endif
 #include "portal.h"
 
-const char *ROOM = "kitchen";
+#ifdef NODE_KITCHEN
+const char *ROOM = "kitchen", *ROOM_LCD = "Phong bep", *ROOM_TITLE = "Phòng bếp", *AP_PREFIX = "SmartHome-Bep", *MDNS_NAME = "esp32-bep";
+const bool HAS_GAS = true;
+const int DEFAULT_ID = 2;
+#else
+const char *ROOM = "living", *ROOM_LCD = "Phong khach", *ROOM_TITLE = "Phòng khách", *AP_PREFIX = "SmartHome-Khach", *MDNS_NAME = "esp32-khach";
+const bool HAS_GAS = false;  // không có MQ-2, còi → gasAlarm luôn false
+const int DEFAULT_ID = 1;
+#endif
 
 // ---------- Chân ----------
 const int DHT_PIN = 4;
 const int PIR_PIN = 27;
-const int MQ2_PIN = 34;
+const int MQ2_PIN = 34;     // chỉ phòng bếp
 const int FAN_PIN = 26;    // relay 1
 const int LIGHT_PIN = 25;  // relay 2
-const int BUZZER_PIN = 23;
+const int BUZZER_PIN = 23;  // chỉ phòng bếp
 const int SET_PIN = 32;  // nút duy nhất: bấm = đổi ID node, giữ 5 giây = cài đặt mạng
 
 const unsigned long SENSOR_EVERY_MS = 2000;
@@ -55,12 +63,11 @@ const unsigned long WIFI_SWITCH_MS = 15000;
 const int MAX_ID = 10;
 
 DHT dht(DHT_PIN, DHT22);
-Adafruit_INA219 ina(0x40);
 LiquidCrystal_I2C *lcd = nullptr;
 Preferences prefs;
 WiFiClient net;
 PubSubClient mqtt(net);
-String base;  // smarthome/{homeId}/kitchen/
+String base;  // smarthome/{homeId}/{room}/
 NetConfig cfg;
 
 // Cài đặt (nhận từ Pi qua topic config, lưu flash)
@@ -68,11 +75,11 @@ int gasThreshold = 400;
 unsigned long offDelayMs = 5 * 60000UL;
 
 // Trạng thái
-int nodeId = 2;
+int nodeId = DEFAULT_ID;
 bool autoMode = true, light = false, fan = false, gasAlarm = false;
-float temperature = NAN, humidity = NAN, powerW = 0;
+float temperature = NAN, humidity = NAN;
 int gas = 0;
-bool presence = false, inaOk = false, stateDirty = true;
+bool presence = false, stateDirty = true;
 unsigned long lastMotion = 0, lastSensors = 0, lastState = 0, lastRetry = 0, lastLcd = 0;
 
 // Nút SET: bấm = tăng ID (tự lưu) + hiện thông tin node, giữ 5 giây = cài đặt mạng
@@ -104,7 +111,7 @@ Button setBtn{SET_PIN};
 void applyOutputs() {
   digitalWrite(LIGHT_PIN, light ? HIGH : LOW);
   digitalWrite(FAN_PIN, fan ? HIGH : LOW);
-  digitalWrite(BUZZER_PIN, gasAlarm ? HIGH : LOW);  // kêu liền (không nhấp nháy) để kẹt kết nối cũng không tắt còi
+  if (HAS_GAS) digitalWrite(BUZZER_PIN, gasAlarm ? HIGH : LOW);  // kêu liền (không nhấp nháy) để kẹt kết nối cũng không tắt còi
 }
 
 void setDevices(bool lightOn, bool fanOn) {
@@ -139,9 +146,8 @@ void publishSensors() {
   JsonDocument d;
   if (!isnan(temperature)) d["temperature"] = serialized(String(temperature, 1));
   if (!isnan(humidity)) d["humidity"] = serialized(String(humidity, 0));
-  d["gas"] = gas;
+  if (HAS_GAS) d["gas"] = gas;
   d["presence"] = presence;
-  if (inaOk) d["power"] = serialized(String(powerW, 2));
   publishJson("sensors", d, false);
 }
 
@@ -201,7 +207,7 @@ void keepConnected(unsigned long now) {
   if (mqtt.connected() || WiFi.status() != WL_CONNECTED) return;
   if (lastRetry && now - lastRetry < RETRY_MS) return;
   lastRetry = now;
-  if (!mdnsOk) mdnsOk = MDNS.begin("esp32-bep");
+  if (!mdnsOk) mdnsOk = MDNS.begin(MDNS_NAME);
   if (piIp == IPAddress() && !piIp.fromString(cfg.piHost)) {
     String host = cfg.piHost;
     if (host.endsWith(".local")) host.remove(host.length() - 6);
@@ -230,18 +236,17 @@ void readSensors() {
   float t = dht.readTemperature(), h = dht.readHumidity();
   if (!isnan(t) && !isnan(h)) { temperature = t; humidity = h; }
 
+  if (!HAS_GAS) return;
   long sum = 0;
   for (int i = 0; i < 16; i++) sum += analogRead(MQ2_PIN);
   gas = sum / 16;
-
-  if (inaOk) powerW = max(0.0f, ina.getPower_mW() / 1000);
 }
 
 void runLogic(unsigned long now) {
   presence = now >= PIR_WARMUP_MS && digitalRead(PIR_PIN) == HIGH;
 
   // Gas: vượt ngưỡng → báo; xuống dưới 90% ngưỡng mới hết (tránh bật tắt liên tục quanh ngưỡng)
-  if (now >= GAS_WARMUP_MS) {
+  if (HAS_GAS && now >= GAS_WARMUP_MS) {
     if (!gasAlarm && gas >= gasThreshold) {
       gasAlarm = true;
       stateDirty = true;
@@ -310,7 +315,7 @@ void updateLcd(unsigned long now) {
     else if ((now / 2000) % 2) snprintf(l2, sizeof l2, "MK: %s", portal::AP_PASS);
     else snprintf(l2, sizeof l2, "Vao 192.168.4.1");
   } else if (now < infoUntil) {
-    snprintf(l1, sizeof l1, "ID %02d Phong bep", nodeId);
+    snprintf(l1, sizeof l1, "ID %02d %s", nodeId, ROOM_LCD);
     if (WiFi.status() != WL_CONNECTED) snprintf(l2, sizeof l2, "WiFi: dang noi..");
     else if (!mqtt.connected()) snprintf(l2, sizeof l2, "Pi: chua ket noi");
     else snprintf(l2, sizeof l2, "%s", WiFi.localIP().toString().c_str());
@@ -320,8 +325,12 @@ void updateLcd(unsigned long now) {
 
     if (gasAlarm) snprintf(l2, sizeof l2, (now / 500) % 2 ? "!! CANH BAO GAS" : "G:%d KHOA DK", gas);
     else if (now < msgUntil) snprintf(l2, sizeof l2, "%s", msg);
-    else if (now < GAS_WARMUP_MS) snprintf(l2, sizeof l2, "MQ-2 nong %2lus", (GAS_WARMUP_MS - now) / 1000 + 1);
-    else snprintf(l2, sizeof l2, "G:%-4d %3.1fW %s", gas, powerW, !mqtt.connected() ? "OFF" : autoMode ? "AUTO" : "MAN");
+    else {
+      const char *net = !mqtt.connected() ? "OFF" : autoMode ? "AUTO" : "MAN";
+      if (!HAS_GAS) snprintf(l2, sizeof l2, "%-11s %s", now < PIR_WARMUP_MS ? "PIR on dinh" : presence ? "Co nguoi" : "Khong nguoi", net);
+      else if (now < GAS_WARMUP_MS) snprintf(l2, sizeof l2, "MQ-2 nong %2lus", (GAS_WARMUP_MS - now) / 1000 + 1);
+      else snprintf(l2, sizeof l2, "G:%-4d %c %s", gas, presence ? 'P' : '-', net);
+    }
   }
   lcdLine(0, l1);
   lcdLine(1, l2);
@@ -343,20 +352,22 @@ void setupLcd() {
 void setup() {
   Serial.begin(115200);
   delay(300);
-  Serial.println("\n=== Node phong bep ===");
+  Serial.printf("\n=== Node %s ===\n", ROOM_LCD);
 
   pinMode(LIGHT_PIN, OUTPUT);
   pinMode(FAN_PIN, OUTPUT);
-  pinMode(BUZZER_PIN, OUTPUT);
-  gpio_set_drive_capability((gpio_num_t)BUZZER_PIN, GPIO_DRIVE_CAP_3);  // buzzer nối thẳng GPIO, cho dòng lớn nhất
+  if (HAS_GAS) {
+    pinMode(BUZZER_PIN, OUTPUT);
+    gpio_set_drive_capability((gpio_num_t)BUZZER_PIN, GPIO_DRIVE_CAP_3);  // buzzer nối thẳng GPIO, cho dòng lớn nhất
+    analogReadResolution(12);
+    analogSetPinAttenuation(MQ2_PIN, ADC_11db);
+  }
   applyOutputs();
   pinMode(PIR_PIN, INPUT_PULLDOWN);
   pinMode(SET_PIN, INPUT_PULLUP);
-  analogReadResolution(12);
-  analogSetPinAttenuation(MQ2_PIN, ADC_11db);
 
   prefs.begin("node", false);
-  nodeId = constrain(prefs.getInt("id", 2), 1, MAX_ID);
+  nodeId = constrain(prefs.getInt("id", DEFAULT_ID), 1, MAX_ID);
   autoMode = prefs.getBool("auto", true);
   gasThreshold = prefs.getInt("gas", gasThreshold);
   offDelayMs = prefs.getULong("off", offDelayMs);
@@ -365,13 +376,11 @@ void setup() {
   dht.begin();
   Wire.begin(21, 22);
   setupLcd();
-  inaOk = ina.begin(&Wire);
-  if (!inaOk) Serial.println("Canh bao: khong thay INA219 (0x40) – khong gui dien nang");
 
   portal::load(cfg, prefs, WIFI_SSID, WIFI_PASS, WIFI2_SSID, WIFI2_PASS, HOME_ID, MQTT_HOSTNAME, MQTT_PASS);
   char ap[17];
-  snprintf(ap, sizeof ap, "SmartHome-Bep-%02X", (uint8_t)(ESP.getEfuseMac() >> 40));  // phân biệt khi có nhiều node
-  portal::setup(&cfg, &prefs, ap, "Cài đặt node Phòng bếp");
+  snprintf(ap, sizeof ap, "%s-%02X", AP_PREFIX, (uint8_t)(ESP.getEfuseMac() >> 40));  // phân biệt khi có nhiều node
+  portal::setup(&cfg, &prefs, ap, (String("Cài đặt node ") + ROOM_TITLE).c_str());
   base = String("smarthome/") + cfg.home + "/" + ROOM + "/";
   WiFi.mode(WIFI_STA);
   WiFi.setAutoReconnect(false);  // keepWifi tự kết nối lại / đổi mạng

@@ -6,13 +6,11 @@ import Login from './pages/Login'
 import Account from './pages/Account'
 import Dashboard from './pages/user/Dashboard'
 import Room from './pages/user/Room'
-import Energy from './pages/user/Energy'
 import HistoryPage from './pages/user/History'
 import HomeSettings from './pages/user/HomeSettings'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminAlerts from './pages/admin/AdminAlerts'
-import EvnPricing from './pages/admin/EvnPricing'
 
 function RequireRole({ role, children }) {
   const ready = useAuth((s) => s.ready)
@@ -46,7 +44,6 @@ export default function App() {
       >
         <Route index element={<Dashboard />} />
         <Route path="phong/:roomId" element={<Room />} />
-        <Route path="dien-nang" element={<Energy />} />
         <Route path="lich-su" element={<HistoryPage />} />
         <Route path="cai-dat" element={<HomeSettings />} />
         <Route path="tai-khoan" element={<Account />} />
@@ -63,7 +60,6 @@ export default function App() {
         <Route index element={<AdminDashboard />} />
         <Route path="nguoi-dung" element={<AdminUsers />} />
         <Route path="canh-bao" element={<AdminAlerts />} />
-        <Route path="bang-gia" element={<EvnPricing />} />
         <Route path="tai-khoan" element={<Account />} />
       </Route>
 

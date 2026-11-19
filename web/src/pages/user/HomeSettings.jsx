@@ -41,7 +41,6 @@ export default function HomeSettings() {
     if (!(num('offDelayMin') >= 1 && num('offDelayMin') <= 120)) errs.offDelayMin = 'Nhập từ 1 đến 120 phút'
     if (!(num('tempHigh') > 0 && num('tempHigh') < 80)) errs.tempHigh = 'Giá trị không hợp lệ'
     if (!(num('humidityHigh') > 0 && num('humidityHigh') <= 100)) errs.humidityHigh = 'Nhập từ 1 đến 100%'
-    if (!(num('luxLow') >= 0)) errs.luxLow = 'Giá trị không hợp lệ'
     if (!form.alertEmails.length) errs.email = 'Cần ít nhất 1 email nhận cảnh báo'
     setErrors(errs)
     if (Object.values(errs).some(Boolean)) return
@@ -51,7 +50,6 @@ export default function HomeSettings() {
       offDelayMin: num('offDelayMin'),
       tempHigh: num('tempHigh'),
       humidityHigh: num('humidityHigh'),
-      luxLow: num('luxLow'),
       alertEmails: form.alertEmails,
     })
     pushToast('Đã lưu cài đặt', 'success')
@@ -94,15 +92,12 @@ export default function HomeSettings() {
             <h2 className="font-semibold">Ngưỡng hiển thị</h2>
             <p className="text-sm text-slate-500">Chỉ dùng để làm nổi bật chỉ số trên web, không ảnh hưởng tới chế độ Tự động.</p>
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Nhiệt độ cao (°C)" error={errors.tempHigh}>
               <input type="number" step="0.5" className="input" value={form.tempHigh} onChange={set('tempHigh')} />
             </Field>
             <Field label="Độ ẩm cao (%)" error={errors.humidityHigh}>
               <input type="number" className="input" value={form.humidityHigh} onChange={set('humidityHigh')} />
-            </Field>
-            <Field label="Ánh sáng yếu (lux)" error={errors.luxLow}>
-              <input type="number" className="input" value={form.luxLow} onChange={set('luxLow')} />
             </Field>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, ArrowUpRight, Cloud, Cpu, Fan, Flame, Lightbulb, Mail, Menu, MonitorSmartphone, Plus, Router, UserCheck, X, Zap } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Cloud, Cpu, Fan, Flame, Lightbulb, Mail, Menu, MonitorSmartphone, Plus, Router, UserCheck, Users, X } from 'lucide-react'
 import { homePathOf, useCurrentUser } from '../store/auth'
 import BrandMark, { LogoIcon } from '../components/landing/BrandMark'
 import HeroEmblem from '../components/landing/HeroEmblem'
@@ -185,7 +185,7 @@ function Hero({ cta }) {
 const PAINS = [
   { text: 'Ra khỏi nhà mới nhớ chưa tắt quạt', pos: 'left-[6%] top-[18%] sm:left-[16%]', at: 0.05 },
   { text: 'Lo rò rỉ gas khi không ai ở nhà', pos: 'right-[6%] top-[66%] sm:right-[10%] sm:top-[64%]', at: 0.22 },
-  { text: 'Không biết tháng này tốn bao nhiêu tiền điện', pos: 'left-[6%] bottom-[14%] sm:left-[22%]', at: 0.4 },
+  { text: 'Ở xa vẫn muốn bật quạt trước khi về', pos: 'left-[6%] bottom-[14%] sm:left-[22%]', at: 0.4 },
   { text: 'Đèn bật cả ngày dù chẳng ai trong phòng', pos: 'right-[6%] top-[16%] sm:right-[16%] sm:top-[14%]', at: 0.58 },
   { text: 'Muốn biết trong nhà đang nóng hay mát', pos: 'right-[6%] bottom-[10%] sm:right-[20%] sm:bottom-[14%]', at: 0.74 },
 ]
@@ -323,7 +323,7 @@ function Solutions() {
         </SectionTitle>
 
         <div className="mt-16 grid grid-cols-1 gap-4 md:grid-cols-12">
-          <SolutionCard className="md:col-span-7" title="Giám sát theo thời gian thực" desc="Nhiệt độ, độ ẩm, ánh sáng, chuyển động và điện năng của từng phòng, cập nhật mỗi 2 giây.">
+          <SolutionCard className="md:col-span-7" title="Giám sát theo thời gian thực" desc="Nhiệt độ, độ ẩm, chuyển động và khí gas của từng phòng, cập nhật mỗi 2 giây.">
             <div className="absolute inset-0 flex -rotate-[14deg] flex-col items-center justify-center gap-5">
               <div className="drift flex gap-4">
                 <FaintPill>Độ ẩm · 68%</FaintPill>
@@ -335,8 +335,8 @@ function Solutions() {
                 </GlowPill>
               </div>
               <div className="drift flex -translate-x-8 gap-4 [animation-delay:-3s]">
-                <FaintPill>Ánh sáng · 320 lux</FaintPill>
-                <FaintPill>Công suất · 9,1 W</FaintPill>
+                <FaintPill>Khí gas · An toàn</FaintPill>
+                <FaintPill>Đèn · Đang bật</FaintPill>
               </div>
             </div>
           </SolutionCard>
@@ -378,7 +378,7 @@ function Solutions() {
             </div>
           </SolutionCard>
 
-          <SolutionCard className="md:col-span-4" delay={160} title="Điện năng & tiền điện EVN" desc="Thống kê theo giờ, ngày, tháng và tự tính tiền điện theo biểu giá bậc thang.">
+          <SolutionCard className="md:col-span-4" delay={160} title="Cả nhà dùng chung" desc="Mỗi thành viên một tài khoản, dùng chung thiết bị và cài đặt; nhật ký ghi rõ ai đã làm gì.">
             <div className="absolute inset-0 flex items-center justify-center">
               {/* các đường dẫn điện */}
               {[-60, -30, 0, 30, 60].map((y) => (
@@ -388,7 +388,7 @@ function Solutions() {
                 <svg className="spin-slow absolute h-20 w-20 [animation-duration:6s]" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" r="40" fill="none" stroke="url(#icon-grad)" strokeWidth="8" strokeDasharray="70 40" strokeLinecap="round" />
                 </svg>
-                <Zap size={26} className="text-amber-200" />
+                <Users size={26} className="text-amber-200" />
               </div>
             </div>
           </SolutionCard>
@@ -402,12 +402,12 @@ function Solutions() {
 
 function HowItWorks() {
   const steps = [
-    { label: 'BƯỚC 01 · CẢM BIẾN', icon: Cpu, title: 'ESP32 đọc cảm biến', desc: 'Nhiệt độ, độ ẩm, ánh sáng, gas, chuyển động, điện năng.' },
+    { label: 'BƯỚC 01 · CẢM BIẾN', icon: Cpu, title: 'ESP32 đọc cảm biến', desc: 'Nhiệt độ, độ ẩm, khí gas, chuyển động.' },
     { label: 'BƯỚC 02 · GATEWAY', icon: Router, title: 'Raspberry Pi xử lý', desc: 'MQTT broker, logic tự động, gửi email cảnh báo.' },
     { label: 'BƯỚC 03 · ĐÁM MÂY', icon: Cloud, title: 'Firebase đồng bộ', desc: 'Lưu trữ, đồng bộ thời gian thực, xác thực người dùng.' },
     { label: 'BƯỚC 04 · GIAO DIỆN', icon: MonitorSmartphone, title: 'Web trên mọi thiết bị', desc: 'Giám sát và điều khiển trên máy tính lẫn điện thoại.' },
   ]
-  const tech = ['ESP32', 'Raspberry Pi 5', 'MQTT', 'Firebase', 'React', 'DHT22', 'MQ-2', 'BH1750', 'PIR', 'INA219']
+  const tech = ['ESP32', 'Raspberry Pi 5', 'MQTT', 'Firebase', 'React', 'DHT22', 'MQ-2', 'PIR']
 
   return (
     <section id="cach-hoat-dong" className="scroll-mt-20 px-5 py-28 sm:px-8 sm:py-36">
@@ -504,7 +504,6 @@ const FAQS = [
   ['Làm sao để có tài khoản?', 'Quản trị viên cấp tài khoản cho từng gia đình. Một nhà có thể có nhiều thành viên, mỗi người đăng nhập bằng tài khoản riêng và dùng chung thiết bị, cài đặt.'],
   ['Khi phát hiện rò rỉ gas, hệ thống làm gì?', 'Còi báo trong bếp kêu, web hiện cảnh báo đỏ và email được gửi tới mọi thành viên. Để an toàn, đèn và quạt giữ nguyên trạng thái, không bật tắt thiết bị điện. Nếu chưa ai xác nhận, quản trị viên có thể nhắc nhở thêm.'],
   ['Chế độ Tự động và Thủ công khác nhau thế nào?', 'Tự động: cảm biến PIR phát hiện có người sẽ bật đèn và quạt, vắng người sau vài phút sẽ tự tắt. Thủ công: bạn tự bật tắt bằng nút trên web. Chế độ được chọn riêng cho từng phòng.'],
-  ['Tiền điện được tính như thế nào?', 'Cảm biến INA219 đo điện năng tiêu thụ của mỗi phòng. Hệ thống cộng dồn theo tháng và tính tiền theo biểu giá điện sinh hoạt bậc thang của EVN, đã gồm VAT.'],
 ]
 
 function Faq() {

@@ -3,8 +3,6 @@ export const fmtNumber = (v, digits = 0) =>
     ? '--'
     : Number(v).toLocaleString('vi-VN', { minimumFractionDigits: digits, maximumFractionDigits: digits })
 
-export const fmtVnd = (v) => `${fmtNumber(Math.round(v ?? 0))} đ`
-
 export const fmtDateTime = (iso) =>
   iso
     ? new Date(iso).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })
@@ -14,11 +12,6 @@ export const fmtDateTime = (iso) =>
 export const fmtNodeId = (id) => (id == null ? '--' : `#${String(id).padStart(2, '0')}`)
 
 export const fmtDate = (iso) => (iso ? new Date(iso).toLocaleDateString('vi-VN') : '--')
-
-export function fmtEnergy(wh) {
-  if (wh == null) return '--'
-  return wh >= 1000 ? `${fmtNumber(wh / 1000, 2)} kWh` : `${fmtNumber(wh, 1)} Wh`
-}
 
 export function timeAgo(iso) {
   if (!iso) return '--'

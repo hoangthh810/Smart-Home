@@ -1,12 +1,12 @@
 // Biểu tượng hero: ô kính chứa logo + các cảm biến bay quanh quỹ đạo.
 // Chỉ animate transform/opacity để mượt.
-import { Fan, Flame, Lightbulb, Thermometer, UserCheck, Zap } from 'lucide-react'
+import { Droplets, Fan, Flame, Lightbulb, Thermometer, UserCheck } from 'lucide-react'
 import { LogoIcon } from './BrandMark'
 
 const OUTER = [
   { icon: Thermometer, angle: 20, cls: 'text-rose-300' },
   { icon: Lightbulb, angle: 140, cls: 'text-amber-200' },
-  { icon: Zap, angle: 260, cls: 'text-violet-200' },
+  { icon: Droplets, angle: 260, cls: 'text-violet-200' },
 ]
 const INNER = [
   { icon: Flame, angle: 80, cls: 'text-orange-300' },

@@ -22,24 +22,23 @@ Mẹo demo: mở 1 tab đăng nhập tài khoản user, 1 tab đăng nhập admi
 
 ```
 src/
-  data/constants.js      Phòng, thiết bị, bảng giá EVN mặc định, cài đặt mặc định
+  data/constants.js      Phòng, thiết bị, cài đặt mặc định
   data/seed.js           Dữ liệu mẫu (nhà, tài khoản, cảnh báo, nhật ký)
   store/db.js            "Cơ sở dữ liệu" giả lập (sẽ thay bằng API FastAPI)
   store/auth.js          Đăng nhập
   store/live.js          Trạng thái thời gian thực (cảm biến, thiết bị)
   services/realtime.js   Lớp kết nối realtime – Realtime Database (dữ liệu thật qua Pi) hoặc MockClient (giả lập)
   services/simulator.js  Giả lập 2 ESP32 + logic Auto trên Raspberry Pi
-  hooks/                 useRealtime, useRoomControl, useEnergy
-  utils/evn.js           Tính tiền điện bậc thang
-  pages/user/            Tổng quan, Phòng, Điện năng, Lịch sử, Cài đặt nhà
-  pages/admin/           Tổng quan, Nhà & tài khoản, Cảnh báo, Bảng giá EVN
+  hooks/                 useRealtime, useRoomControl
+  pages/user/            Tổng quan, Phòng, Lịch sử, Cài đặt nhà
+  pages/admin/           Tổng quan, Nhà & tài khoản, Cảnh báo
 ```
 
 ## MQTT topic
 
 | Topic | Hướng | Payload |
 |---|---|---|
-| `smarthome/{homeId}/{room}/sensors` | ESP32 → Web | `{temperature, humidity, lux \| gas, presence, power}` |
+| `smarthome/{homeId}/{room}/sensors` | ESP32 → Web | `{temperature, humidity, gas (chỉ bếp), presence}` |
 | `smarthome/{homeId}/{room}/state` | ESP32 → Web | `{nodeId, mode, devices: {light, fan, buzzer}, alarm}` |
 | `smarthome/{homeId}/{room}/cmd` | Web → Pi/ESP32 | `{mode: "auto" \| "manual"}` hoặc `{device, value}` |
 | `smarthome/{homeId}/{room}/event` | Pi → Web | `{actor, action}` |
@@ -56,4 +55,4 @@ Web không nói MQTT trực tiếp: gateway trên Pi (`gateway/`) chép sang Rea
 - **Thủ công**: người dùng bật/tắt đèn, quạt bằng nút trên web (không có nút bấm vật lý điều khiển thiết bị).
 - **Nút nhấn trên node** (chỉ 1 nút SET = D32): bấm để tăng ID node 1 → 10 rồi quay về 1 (tự lưu flash), giữ 5 giây để cài WiFi; không bật/tắt đèn quạt. ID hiện trên LCD và gửi lên web trong `state.nodeId`.
 - **Khí gas vượt ngưỡng**: còi kêu, gửi email, hiện cảnh báo trên web; đèn và quạt giữ nguyên, tạm khoá điều khiển (tránh phát tia lửa điện).
-- Ngưỡng nhiệt độ, độ ẩm, ánh sáng chỉ để hiển thị, không ảnh hưởng chế độ Tự động.
+- Ngưỡng nhiệt độ, độ ẩm chỉ để hiển thị, không ảnh hưởng chế độ Tự động.

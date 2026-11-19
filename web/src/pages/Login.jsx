@@ -7,7 +7,7 @@ import HeroEmblem from '../components/landing/HeroEmblem'
 import { BlurWords } from '../components/landing/effects'
 
 const FEATURES = [
-  { icon: Activity, title: 'Giám sát thời gian thực', desc: 'Nhiệt độ, độ ẩm, ánh sáng, khí gas cập nhật mỗi 2 giây', cls: 'text-violet-300' },
+  { icon: Activity, title: 'Giám sát thời gian thực', desc: 'Nhiệt độ, độ ẩm, chuyển động, khí gas cập nhật mỗi 2 giây', cls: 'text-violet-300' },
   { icon: Power, title: 'Điều khiển từ xa', desc: 'Bật tắt đèn, quạt của từng phòng ở bất cứ đâu', cls: 'text-sky-300' },
   { icon: BellRing, title: 'Cảnh báo tức thì', desc: 'Còi, web và email ngay khi phát hiện rò rỉ gas', cls: 'text-amber-300' },
 ]

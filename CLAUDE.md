@@ -34,6 +34,7 @@ Hệ thống nhà thông minh giám sát môi trường và trạng thái các p
 
 - **Manual/Auto áp dụng theo PHÒNG**, không theo từng thiết bị.
 - **Auto**: PIR có người → bật đèn + quạt; không còn người sau X phút (người dùng cài) → tắt.
+- **"Có người"** = có chuyển động trong ~5 giây gần nhất: PIR tự giữ ~3 giây (núm Tx vặn nhỏ nhất) + node giữ thêm 2 giây (`PRESENCE_HOLD_MS`), tránh nhấp nháy khi PIR rớt LOW ngắn; đổi trạng thái là node gửi lên ngay.
 - **Manual**: người dùng bật/tắt đèn, quạt bằng nút trên web; PIR không điều khiển gì nhưng vẫn gửi lên để web hiển thị "Có người/Không có". Buzzer do hệ thống điều khiển.
 - **Node chỉ dùng 1 nút nhấn SET (D32), KHÔNG điều khiển đèn/quạt**: mỗi lần bấm ID node tăng 1, quá 10 quay về 1 (tự lưu flash, LCD hiện ID + trạng thái mạng); **giữ SET 5 giây** = chế độ cài đặt: node phát WiFi `SmartHome-…`, máy tính/điện thoại vào `192.168.4.1` nhập WiFi (2 mạng), ID nhà, Pi (không làm app). Người dùng xem ID nhà ở Cài đặt nhà, admin ở Nhà & tài khoản. ID (1–10) hiện trên LCD và gửi lên web (`state.nodeId`), web hiện "Node #01" ở thẻ phòng.
 - Ngưỡng nhiệt độ, độ ẩm **chỉ để hiển thị**, không ảnh hưởng Auto.

@@ -57,6 +57,7 @@ const int SET_PIN = 32;  // nút duy nhất: bấm = đổi ID node, giữ 5 gi�
 const unsigned long SENSOR_EVERY_MS = 2000;
 const unsigned long STATE_EVERY_MS = 30000;  // gửi lại state định kỳ phòng khi mất bản tin
 const unsigned long PIR_WARMUP_MS = 30000;   // HC-SR501 cần 30–60 giây ổn định sau khi cấp điện
+const unsigned long PRESENCE_HOLD_MS = 2000; // + ~3 giây PIR tự giữ (núm Tx nhỏ nhất) = hết chuyển động ~5 giây mới báo "không có người"
 const unsigned long GAS_WARMUP_MS = 60000;   // sợi đốt MQ-2 chưa nóng thì số đo chưa đúng
 const unsigned long RETRY_MS = 10000;
 const unsigned long WIFI_SWITCH_MS = 15000;
@@ -243,7 +244,10 @@ void readSensors() {
 }
 
 void runLogic(unsigned long now) {
-  presence = now >= PIR_WARMUP_MS && digitalRead(PIR_PIN) == HIGH;
+  // PIR hay rớt LOW ngắn giữa các lần bắt chuyển động → giữ "có người" thêm PRESENCE_HOLD_MS sau lần cuối thấy
+  static unsigned long lastPir = 0;
+  if (digitalRead(PIR_PIN) == HIGH) lastPir = now;
+  presence = now >= PIR_WARMUP_MS && lastPir && now - lastPir < PRESENCE_HOLD_MS;
 
   // Gas: vượt ngưỡng → báo; xuống dưới 90% ngưỡng mới hết (tránh bật tắt liên tục quanh ngưỡng)
   if (HAS_GAS && now >= GAS_WARMUP_MS) {
@@ -415,8 +419,11 @@ void loop() {
   runLogic(now);
   applyOutputs();
 
-  if (now - lastSensors >= SENSOR_EVERY_MS) {
+  // Gửi định kỳ, và gửi ngay khi có người/không có người đổi để web cập nhật tức thì
+  static bool sentPresence = false;
+  if (now - lastSensors >= SENSOR_EVERY_MS || presence != sentPresence) {
     lastSensors = now;
+    sentPresence = presence;
     readSensors();
     if (mqtt.connected()) publishSensors();
   }

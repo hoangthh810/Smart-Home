@@ -1,40 +1,36 @@
-# Nhà Thông Minh – Hệ thống giám sát và quản lý nhà thông minh
+# Nhà Thông Minh
 
-Đồ án 2 – Tống Hữu Huy Hoàng.
+Đồ án 2 – Hệ thống giám sát và quản lý nhà thông minh · Tống Hữu Huy Hoàng
 
-Giám sát nhiệt độ, độ ẩm, chuyển động, khí gas của từng phòng theo thời gian thực và điều khiển đèn, quạt qua web (responsive, dùng được trên điện thoại).
+Theo dõi nhiệt độ, độ ẩm, chuyển động, khí gas từng phòng theo thời gian thực; bật/tắt đèn, quạt qua web (dùng được trên điện thoại).
 
 ```
-2 x ESP32 ──MQTT (LAN)──> Raspberry Pi 5 (Gateway) <──> Firebase <──> Web
-                          ├─ Mosquitto (MQTT broker)     ├─ Realtime Database
-                          └─ main.py: MQTT <-> Firebase, ├─ Firestore
-                             cảnh báo gas, gửi Gmail     └─ Authentication
+ESP32 (2 phòng) ──MQTT──> Raspberry Pi 5 ──> Firebase ──> Web
 ```
 
 | Phòng | Cảm biến | Thiết bị |
 |---|---|---|
-| Phòng khách | DHT22, PIR, LCD1602 | Đèn LED, quạt mini |
-| Phòng bếp | DHT22, MQ-2, PIR, LCD1602 | Đèn LED, quạt, còi báo |
+| Phòng khách | DHT22, PIR, LCD | Đèn, quạt |
+| Phòng bếp | DHT22, MQ-2, PIR, LCD | Đèn, quạt, còi |
 
-## Chức năng chính
+## Chức năng
 
-- **Tự động / Thủ công** theo từng phòng: Tự động thì PIR có người → bật đèn + quạt, vắng người sau X phút → tắt; Thủ công thì bật/tắt bằng nút trên web.
-- **Cảnh báo khí gas** (phòng bếp): còi kêu, popup trên web, gửi Gmail; đèn và quạt giữ nguyên trạng thái để tránh tia lửa điện.
-- **Nhiều nhà, nhiều thành viên**: mỗi nhà nhiều tài khoản dùng chung thiết bị, nhật ký ghi ai làm gì.
-- **Admin**: quản lý nhà và tài khoản, cấp tài khoản (gửi mật khẩu qua Gmail), thống kê, xem và nhắc nhở cảnh báo của mọi nhà.
-- **Node ESP32**: nút SET đổi ID node (1–10), giữ 5 giây để cài WiFi + ID nhà qua trình duyệt (`192.168.4.1`), LCD hiện nhiệt độ, độ ẩm, trạng thái.
+- **Tự động**: có người → bật đèn + quạt, vắng người sau X phút → tắt. **Thủ công**: bật/tắt trên web.
+- **Rò rỉ gas**: còi kêu, cảnh báo trên web, gửi Gmail; đèn và quạt giữ nguyên để tránh tia lửa điện.
+- **Nhiều thành viên** dùng chung một nhà; nhật ký ghi ai làm gì.
+- **Admin**: quản lý nhà, cấp tài khoản qua Gmail, xem và nhắc nhở cảnh báo.
 
 ## Thư mục
 
-| Thư mục | Nội dung | Hướng dẫn |
-|---|---|---|
-| `web/` | Web React 19 + Vite + Tailwind v4 + Firebase | [web/README.md](web/README.md) |
-| `gateway/` | Chương trình Python trên Raspberry Pi 5 + cấu hình Mosquitto | [gateway/README.md](gateway/README.md) |
-| `hardware/esp32/` | Firmware PlatformIO: `src/node/node.cpp` (env `node_phong_khach`, `node_phong_bep`), bài test từng linh kiện `src/test/` | Bước 5 trong [gateway/README.md](gateway/README.md) |
-| `hardware/*.html` | Sơ đồ nối chân node phòng khách, phòng bếp (mở bằng trình duyệt) | |
-| `firebase/` | Luật bảo mật Firestore, Realtime Database | |
+| Thư mục | Nội dung |
+|---|---|
+| [`web/`](web/README.md) | Web React + Firebase |
+| [`gateway/`](gateway/README.md) | Chương trình Python trên Pi + Mosquitto, kèm hướng dẫn nạp ESP32 |
+| `hardware/esp32/` | Firmware PlatformIO (env `node_phong_khach`, `node_phong_bep`) và bài test linh kiện |
+| `hardware/*.html` | Sơ đồ nối chân (mở bằng trình duyệt) |
+| `firebase/` | Luật bảo mật Firebase |
 
-## Chạy nhanh
+## Chạy web
 
 ```bash
 cd web
@@ -43,6 +39,6 @@ npm install
 npm run dev                  # http://localhost:5173
 ```
 
-Không điền `VITE_FIREBASE_DATABASE_URL` thì web dùng dữ liệu giả lập, không cần phần cứng.
+Chưa có phần cứng thì để trống `VITE_FIREBASE_DATABASE_URL`, web tự dùng dữ liệu giả lập.
 
-Các file bí mật **không commit**: `web/.env.local`, `gateway/service-account.json`, `hardware/esp32/include/secrets.h`.
+> Không commit: `web/.env.local`, `gateway/service-account.json`, `hardware/esp32/include/secrets.h`.
